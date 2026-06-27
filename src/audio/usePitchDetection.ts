@@ -3,7 +3,13 @@ import { PitchDetector } from 'pitchy';
 import { frequencyToNote, type DetectedNote } from '../music/frequency';
 
 const MIN_CLARITY = 0.93;
-const MIN_VOLUME = 0.015;
+
+// Kept just above the typical electrical/ADC noise floor (~0.001-0.002 RMS on most
+// mics) — going lower risks treating pure silence as signal. This isn't the main
+// defense against false positives though: MIN_CLARITY plus the majority-vote
+// stability window below do that job, since random noise essentially never produces
+// a strong, consistent periodicity reading the way a real plucked string does.
+const MIN_VOLUME = 0.004;
 
 // Guitar range (with margin): open low E (~82Hz) to high frets on the high E string (~1100Hz).
 const MIN_FREQUENCY = 75;
@@ -95,9 +101,15 @@ export function usePitchDetection() {
       // Band-pass the signal to the guitar's range before analysis: this cuts low-end
       // rumble/handling noise and high-frequency hiss that would otherwise pollute the
       // autocorrelation and occasionally get picked up as a spurious pitch.
+      //
+      // The cutoff needs real headroom below the open low E string (~82.41Hz) — a
+      // biquad filter still measurably attenuates frequencies less than an octave
+      // above its cutoff. At 70Hz, E2 sat close enough to the rolloff that its
+      // fundamental got attenuated relative to its own harmonics, occasionally making
+      // the detector lock onto the 3rd harmonic (~247Hz, a B) instead of the true E.
       const highpass = audioContext.createBiquadFilter();
       highpass.type = 'highpass';
-      highpass.frequency.value = 70;
+      highpass.frequency.value = 50;
 
       const lowpass = audioContext.createBiquadFilter();
       lowpass.type = 'lowpass';
