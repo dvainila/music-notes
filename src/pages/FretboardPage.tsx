@@ -4,6 +4,7 @@ import { TopBar } from '../components/Layout/TopBar';
 import { Fretboard } from '../components/Fretboard/Fretboard';
 import { SharpToggle } from '../components/Controls/SharpToggle';
 import { HandednessToggle } from '../components/Controls/HandednessToggle';
+import { MetronomeControl } from '../components/Controls/MetronomeControl';
 import { PracticeModal, type PracticeConfig } from '../components/Practice/PracticeModal';
 import { PracticeCard } from '../components/Practice/PracticeCard';
 import { LiveNoteIndicator } from '../components/Practice/LiveNoteIndicator';
@@ -196,6 +197,7 @@ export function FretboardPage() {
         </StartButton>
         <HandednessToggle value={handedness} onChange={handleHandednessChange} />
         <SharpToggle checked={showSharps} onChange={setShowSharps} />
+        <MetronomeControl />
       </TopBar>
 
       <Content>
