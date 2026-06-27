@@ -67,6 +67,13 @@ export function usePitchDetection() {
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
 
+      // iOS Safari frequently leaves a freshly created AudioContext "suspended" when
+      // there was an async gap (the getUserMedia await above) since the user's tap —
+      // without this it silently never analyses any audio on iPhone.
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
       const source = audioContext.createMediaStreamSource(stream);
 
       // Band-pass the signal to the guitar's range before analysis: this cuts low-end
