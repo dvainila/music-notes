@@ -61,15 +61,31 @@ export function usePitchDetection() {
 
   const start = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
+      // Create (and resume) the AudioContext synchronously, before any await, so it's
+      // still tied to the click's user-activation. iOS WebKit (both Safari and Chrome,
+      // which is just a WebKit wrapper there) can permanently strand the context in
+      // "suspended" if creation happens only after the getUserMedia permission prompt
+      // has been waited on — at that point the gesture has gone stale and resume() may
+      // silently no-op, breaking pitch detection on iPhone with no visible error.
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
 
-      // iOS Safari frequently leaves a freshly created AudioContext "suspended" when
-      // there was an async gap (the getUserMedia await above) since the user's tap —
-      // without this it silently never analyses any audio on iPhone.
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          // Voice-call style processing mangles musical pitch content; ask for the
+          // rawest signal the device/browser will give us.
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      });
+      streamRef.current = stream;
+
+      // Belt-and-suspenders: resume again in case iOS suspended it while the
+      // permission dialog was open.
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
@@ -149,6 +165,8 @@ export function usePitchDetection() {
       setState({ isListening: true, detected: null, volume: 0, error: null });
       intervalRef.current = window.setInterval(tick, ANALYSIS_INTERVAL_MS);
     } catch (err) {
+      audioContextRef.current?.close();
+      audioContextRef.current = null;
       setState({
         isListening: false,
         detected: null,
