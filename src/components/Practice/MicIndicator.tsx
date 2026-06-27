@@ -17,7 +17,7 @@ const Dot = styled.div<{ $state: 'idle' | 'listening' | 'error'; $volume: number
   border-radius: 50%;
   background: ${({ theme, $state }) =>
     $state === 'error' ? '#e07a7a' : $state === 'listening' ? theme.colors.accent : theme.colors.fret};
-  transform: scale(${({ $state, $volume }) => ($state === 'listening' ? 1 + Math.min($volume * 4, 0.6) : 1)});
+  transform: scale(${({ $state, $volume }) => ($state === 'listening' ? 1 + Math.min($volume * 8, 0.6) : 1)});
   transition: transform 0.08s ease, background 0.2s ease;
 
   ${({ $state }) =>

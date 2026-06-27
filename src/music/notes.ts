@@ -48,12 +48,34 @@ export function getPracticeNotes(openNote: Note, includeSharps: boolean): Practi
   return notes;
 }
 
-export function pickRandomPracticeNote(
-  openNote: Note,
-  includeSharps: boolean,
-  excludeNote?: Note,
-): PracticeNote {
-  const candidates = getPracticeNotes(openNote, includeSharps);
-  const pool = candidates.length > 1 ? candidates.filter((c) => c.note !== excludeNote) : candidates;
-  return pool[Math.floor(Math.random() * pool.length)];
+export function getUniqueNotes(openNote: Note, includeSharps: boolean): Note[] {
+  const seen = new Set<Note>();
+  for (const { note } of getPracticeNotes(openNote, includeSharps)) {
+    seen.add(note);
+  }
+  return [...seen];
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+/**
+ * Builds a freshly shuffled "bag" containing every available note exactly once,
+ * so a full practice round covers all notes before any repeat. If the previous
+ * round's last note would land first again (the only seam where a repeat can
+ * happen across bags), it's swapped further back in the new bag.
+ */
+export function createNoteBag(openNote: Note, includeSharps: boolean, avoidFirst?: Note): Note[] {
+  const bag = shuffle(getUniqueNotes(openNote, includeSharps));
+  if (bag.length > 1 && bag[0] === avoidFirst) {
+    const swapWith = 1 + Math.floor(Math.random() * (bag.length - 1));
+    [bag[0], bag[swapWith]] = [bag[swapWith], bag[0]];
+  }
+  return bag;
 }

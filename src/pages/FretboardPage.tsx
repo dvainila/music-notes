@@ -11,8 +11,8 @@ import { usePitchDetection } from '../audio/usePitchDetection';
 import { loadHandedness, saveHandedness } from '../storage/handedness';
 import {
   STANDARD_TUNING,
+  createNoteBag,
   getStringNumber,
-  pickRandomPracticeNote,
   type Handedness,
   type Note,
 } from '../music/notes';
@@ -113,6 +113,7 @@ const IdlePractice = styled.div`
 
 interface PracticeState extends PracticeConfig {
   currentNote: Note;
+  noteQueue: Note[];
 }
 
 const NEXT_NOTE_DELAY_MS = 1200;
@@ -142,17 +143,29 @@ export function FretboardPage() {
 
   const handleStartPractice = (config: PracticeConfig) => {
     const openNote = STANDARD_TUNING[config.stringIndex];
-    const { note } = pickRandomPracticeNote(openNote, config.includeSharps);
-    setPractice({ ...config, currentNote: note });
+    const [currentNote, ...noteQueue] = createNoteBag(openNote, config.includeSharps);
+    setPractice({ ...config, currentNote, noteQueue });
     setSelectedString(config.stringIndex);
     setIsModalOpen(false);
   };
 
   const handleNextNote = () => {
     if (!practice) return;
+    // Step through the shuffled bag until it's exhausted, then deal a fresh one —
+    // this guarantees every note appears once before any note repeats.
+    if (practice.noteQueue.length > 0) {
+      const [currentNote, ...noteQueue] = practice.noteQueue;
+      setPractice({ ...practice, currentNote, noteQueue });
+      return;
+    }
+
     const openNote = STANDARD_TUNING[practice.stringIndex];
-    const { note } = pickRandomPracticeNote(openNote, practice.includeSharps, practice.currentNote);
-    setPractice({ ...practice, currentNote: note });
+    const [currentNote, ...noteQueue] = createNoteBag(
+      openNote,
+      practice.includeSharps,
+      practice.currentNote,
+    );
+    setPractice({ ...practice, currentNote, noteQueue });
   };
 
   const handleFinishPractice = () => {
