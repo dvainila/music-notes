@@ -20,18 +20,32 @@ const Wrapper = styled.div<{ $correct: boolean }>`
     css`
       border-color: ${theme.colors.accent};
     `}
+
+  @media (max-width: 900px) {
+    padding: 8px;
+    gap: 4px;
+    border-radius: 8px;
+  }
 `;
 
 const Hint = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
   text-align: center;
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+  }
 `;
 
 const NoteName = styled.div`
   font-size: 48px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.accent};
+
+  @media (max-width: 900px) {
+    font-size: 22px;
+  }
 `;
 
 const StatusLine = styled.div<{ $correct: boolean }>`
@@ -40,6 +54,11 @@ const StatusLine = styled.div<{ $correct: boolean }>`
   min-height: 18px;
   text-align: center;
   color: ${({ theme, $correct }) => ($correct ? theme.colors.accent : theme.colors.textMuted)};
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+    min-height: 0;
+  }
 `;
 
 const Actions = styled.div`
@@ -47,6 +66,10 @@ const Actions = styled.div`
   flex-direction: column;
   width: 100%;
   gap: 8px;
+
+  @media (max-width: 900px) {
+    gap: 4px;
+  }
 `;
 
 const Button = styled.button<{ $variant?: 'primary' }>`
@@ -59,6 +82,11 @@ const Button = styled.button<{ $variant?: 'primary' }>`
   font-size: 13px;
   background: ${({ theme, $variant }) => ($variant === 'primary' ? theme.colors.accent : theme.colors.fret)};
   color: ${({ theme, $variant }) => ($variant === 'primary' ? theme.colors.noteTextActive : theme.colors.noteText)};
+
+  @media (max-width: 900px) {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 `;
 
 interface PracticeCardProps {
@@ -82,25 +110,25 @@ export function PracticeCard({
 }: PracticeCardProps) {
   return (
     <Wrapper $correct={isCorrect}>
-      <Hint>Найдите эту ноту на струне {stringLabel}</Hint>
+      <Hint>Find this note on string {stringLabel}</Hint>
       <NoteName>{note}</NoteName>
 
       <StatusLine $correct={isCorrect}>
         {isListeningForMatch
           ? isCorrect
-            ? 'Верно! ✓'
+            ? 'Correct! ✓'
             : detectedNote
-              ? `Слышу: ${detectedNote}`
-              : 'Сыграйте ноту на гитаре...'
+              ? `Hearing: ${detectedNote}`
+              : 'Play a note on the guitar...'
           : ' '}
       </StatusLine>
 
       <Actions>
         <Button type="button" $variant="primary" onClick={onNext}>
-          Следующая нота
+          Next note
         </Button>
         <Button type="button" onClick={onFinish}>
-          Завершить обучение
+          Finish practice
         </Button>
       </Actions>
     </Wrapper>

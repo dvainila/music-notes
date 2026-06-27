@@ -17,15 +17,30 @@ export const Card = styled.div`
   padding: 28px;
   width: 100%;
   max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (max-width: 900px) {
+    padding: 14px;
+  }
 `;
 
 export const Title = styled.h2`
   margin: 0 0 20px;
   font-size: 20px;
+
+  @media (max-width: 900px) {
+    margin: 0 0 10px;
+    font-size: 15px;
+  }
 `;
 
 export const FieldGroup = styled.div`
   margin-bottom: 20px;
+
+  @media (max-width: 900px) {
+    margin-bottom: 10px;
+  }
 `;
 
 export const FieldLabel = styled.div`

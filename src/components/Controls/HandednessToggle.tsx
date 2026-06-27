@@ -11,6 +11,10 @@ const Wrapper = styled.div`
 const Label = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: 14px;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
 `;
 
 const Options = styled.div`
@@ -33,6 +37,11 @@ const Option = styled.button<{ $active: boolean }>`
   &:hover {
     background: ${({ theme, $active }) => ($active ? theme.colors.accent : theme.colors.fret)};
   }
+
+  @media (max-width: 900px) {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 `;
 
 interface HandednessToggleProps {
@@ -43,13 +52,13 @@ interface HandednessToggleProps {
 export function HandednessToggle({ value, onChange }: HandednessToggleProps) {
   return (
     <Wrapper>
-      <Label>Гитара:</Label>
+      <Label>Guitar:</Label>
       <Options>
         <Option type="button" $active={value === 'right'} onClick={() => onChange('right')}>
-          Правша
+          Right-handed
         </Option>
         <Option type="button" $active={value === 'left'} onClick={() => onChange('left')}>
-          Левша
+          Left-handed
         </Option>
       </Options>
     </Wrapper>

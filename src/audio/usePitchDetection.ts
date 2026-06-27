@@ -125,7 +125,7 @@ export function usePitchDetection() {
         isListening: false,
         detected: null,
         volume: 0,
-        error: err instanceof Error ? err.message : 'Не удалось получить доступ к микрофону',
+        error: err instanceof Error ? err.message : 'Could not access the microphone',
       });
     }
   }, []);

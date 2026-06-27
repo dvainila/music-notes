@@ -9,6 +9,11 @@ const Wrapper = styled.label`
   color: ${({ theme }) => theme.colors.noteText};
   font-size: 14px;
   white-space: nowrap;
+
+  @media (max-width: 900px) {
+    font-size: 10px;
+    gap: 5px;
+  }
 `;
 
 const Switch = styled.input`
@@ -40,6 +45,20 @@ const Switch = styled.input`
   &:checked::before {
     transform: translateX(18px);
   }
+
+  @media (max-width: 900px) {
+    width: 28px;
+    height: 16px;
+
+    &::before {
+      width: 12px;
+      height: 12px;
+    }
+
+    &:checked::before {
+      transform: translateX(12px);
+    }
+  }
 `;
 
 interface SharpToggleProps {
@@ -51,7 +70,7 @@ export function SharpToggle({ checked, onChange }: SharpToggleProps) {
   return (
     <Wrapper>
       <Switch type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      Показывать диезы (#)
+      Show sharps (#)
     </Wrapper>
   );
 }

@@ -11,6 +11,14 @@ export const Row = styled.div<{ $active: boolean; $dimmed: boolean; $handedness:
   cursor: pointer;
   opacity: ${({ $dimmed }) => ($dimmed ? 0.35 : 1)};
   transition: opacity 0.2s ease;
+
+  @media (max-width: 900px) {
+    grid-template-columns: ${({ $handedness }) =>
+      $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
+    height: auto;
+    flex: 1;
+    min-height: 0;
+  }
 `;
 
 export const StringLine = styled.div<{ $active: boolean; $thickness: number; $handedness: Handedness }>`
@@ -24,6 +32,12 @@ export const StringLine = styled.div<{ $active: boolean; $thickness: number; $ha
   transform: translateY(-50%);
   border-radius: 2px;
   transition: background 0.2s ease;
+
+  @media (max-width: 900px) {
+    ${({ $handedness }) =>
+      $handedness === 'left' ? css`left: 0; right: 30px;` : css`left: 30px; right: 0;`}
+    height: ${({ $thickness }) => Math.max(1, Math.round($thickness / 1.8))}px;
+  }
 `;
 
 export const StringLabel = styled.div<{ $active: boolean }>`
@@ -35,17 +49,29 @@ export const StringLabel = styled.div<{ $active: boolean }>`
   justify-content: center;
   gap: 2px;
   color: ${({ theme, $active }) => ($active ? theme.colors.stringActive : theme.colors.textMuted)};
+
+  @media (max-width: 900px) {
+    gap: 0;
+  }
 `;
 
 export const StringNumber = styled.span`
   font-size: 12px;
   font-weight: 400;
   opacity: 0.7;
+
+  @media (max-width: 900px) {
+    font-size: 7px;
+  }
 `;
 
 export const StringNoteName = styled.span`
   font-weight: 600;
   font-size: 17px;
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+  }
 `;
 
 export const FretCell = styled.div<{
@@ -74,6 +100,10 @@ export const FretCell = styled.div<{
     css`
       border-right: 3px solid ${theme.colors.nut};
     `}
+
+  @media (max-width: 900px) {
+    padding: 0 3px;
+  }
 `;
 
 export const NoteBubble = styled.div<{ $active: boolean }>`
@@ -89,4 +119,10 @@ export const NoteBubble = styled.div<{ $active: boolean }>`
   font-weight: 600;
   background: ${({ theme, $active }) => ($active ? theme.colors.noteBgActive : theme.colors.noteBg)};
   color: ${({ theme, $active }) => ($active ? theme.colors.noteTextActive : theme.colors.noteText)};
+
+  @media (max-width: 900px) {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
 `;

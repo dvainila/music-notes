@@ -32,10 +32,10 @@ export function PracticeModal({ onStart, onCancel }: PracticeModalProps) {
   return (
     <Overlay onClick={onCancel}>
       <Card onClick={(e) => e.stopPropagation()}>
-        <Title>Настройка обучения</Title>
+        <Title>Practice settings</Title>
 
         <FieldGroup>
-          <FieldLabel>Выберите струну</FieldLabel>
+          <FieldLabel>Choose a string</FieldLabel>
           <StringGrid>
             {STANDARD_TUNING.map((note, index) => (
               <StringButton
@@ -57,7 +57,7 @@ export function PracticeModal({ onStart, onCancel }: PracticeModalProps) {
               checked={includeSharps}
               onChange={(e) => setIncludeSharps(e.target.checked)}
             />
-            Включая диезы (#)
+            Include sharps (#)
           </CheckboxRow>
           <CheckboxRow>
             <input
@@ -65,20 +65,20 @@ export function PracticeModal({ onStart, onCancel }: PracticeModalProps) {
               checked={showNotesOnString}
               onChange={(e) => setShowNotesOnString(e.target.checked)}
             />
-            Показывать ноты на струне
+            Show notes on the string
           </CheckboxRow>
         </FieldGroup>
 
         <Actions>
           <Button type="button" onClick={onCancel}>
-            Отмена
+            Cancel
           </Button>
           <Button
             type="button"
             $variant="primary"
             onClick={() => onStart({ stringIndex, includeSharps, showNotesOnString })}
           >
-            Начать обучение
+            Start practice
           </Button>
         </Actions>
       </Card>

@@ -43,6 +43,11 @@ const StartButton = styled.button`
     opacity: 0.5;
     cursor: default;
   }
+
+  @media (max-width: 900px) {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
 `;
 
 const Content = styled.div`
@@ -54,6 +59,12 @@ const Content = styled.div`
   gap: 24px;
   padding: 32px 40px;
   overflow: hidden;
+
+  @media (max-width: 900px) {
+    gap: 10px;
+    padding: 10px 14px;
+    overflow-y: auto;
+  }
 `;
 
 const FretArea = styled.div`
@@ -63,6 +74,10 @@ const FretArea = styled.div`
   justify-content: center;
   min-width: 0;
   min-height: 0;
+
+  @media (max-width: 900px) {
+    align-items: stretch;
+  }
 `;
 
 const NoteArea = styled.div`
@@ -89,6 +104,11 @@ const IdlePractice = styled.div`
   text-align: center;
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
+
+  @media (max-width: 900px) {
+    padding: 12px;
+    font-size: 11px;
+  }
 `;
 
 interface PracticeState extends PracticeConfig {
@@ -159,7 +179,7 @@ export function FretboardPage() {
     <Page>
       <TopBar>
         <StartButton type="button" onClick={() => setIsModalOpen(true)} disabled={!!practice}>
-          Начать обучение нотам
+          Start note practice
         </StartButton>
         <HandednessToggle value={handedness} onChange={handleHandednessChange} />
         <SharpToggle checked={showSharps} onChange={setShowSharps} />
@@ -204,7 +224,7 @@ export function FretboardPage() {
             />
           ) : (
             <IdlePractice>
-              Нажмите «Начать обучение нотам», чтобы потренироваться в поиске нот на струне
+              Click "Start note practice" to train finding notes on a string
             </IdlePractice>
           )}
         </PracticeArea>

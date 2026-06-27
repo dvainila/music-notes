@@ -30,6 +30,10 @@ const Dot = styled.div<{ $state: 'idle' | 'listening' | 'error'; $volume: number
 const Label = styled.span`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+  }
 `;
 
 interface MicIndicatorProps {
@@ -40,7 +44,7 @@ interface MicIndicatorProps {
 
 export function MicIndicator({ isListening, hasError, volume }: MicIndicatorProps) {
   const state = hasError ? 'error' : isListening ? 'listening' : 'idle';
-  const label = hasError ? 'Ошибка микрофона' : isListening ? 'Микрофон слушает' : 'Микрофон выключен';
+  const label = hasError ? 'Microphone error' : isListening ? 'Listening' : 'Microphone off';
 
   return (
     <Wrapper>

@@ -9,6 +9,11 @@ const Dot = styled.div`
   background: ${({ theme }) => theme.colors.markerDot};
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4) inset;
   transform: translate(-50%, -50%);
+
+  @media (max-width: 900px) {
+    width: 7px;
+    height: 7px;
+  }
 `;
 
 interface FretMarkerProps {

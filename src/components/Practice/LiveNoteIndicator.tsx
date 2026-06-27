@@ -13,12 +13,22 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: center;
   gap: 14px;
+
+  @media (max-width: 900px) {
+    padding: 8px;
+    gap: 4px;
+    border-radius: 8px;
+  }
 `;
 
 const Title = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
   text-align: center;
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+  }
 `;
 
 const NoteName = styled.div`
@@ -26,6 +36,10 @@ const NoteName = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.colors.accent};
   line-height: 1;
+
+  @media (max-width: 900px) {
+    font-size: 22px;
+  }
 `;
 
 const Placeholder = styled.div`
@@ -33,12 +47,21 @@ const Placeholder = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.colors.fret};
   line-height: 1;
+
+  @media (max-width: 900px) {
+    font-size: 16px;
+  }
 `;
 
 const Details = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
   min-height: 16px;
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+    min-height: 0;
+  }
 `;
 
 const Button = styled.button`
@@ -50,12 +73,21 @@ const Button = styled.button`
   font-size: 13px;
   background: ${({ theme }) => theme.colors.accent};
   color: ${({ theme }) => theme.colors.noteTextActive};
+
+  @media (max-width: 900px) {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 `;
 
 const NotSupported = styled.div`
   font-size: 13px;
   color: #e07a7a;
   text-align: center;
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+  }
 `;
 
 interface LiveNoteIndicatorProps {
@@ -78,8 +110,8 @@ export function LiveNoteIndicator({
   if (!isMicSupported) {
     return (
       <Wrapper>
-        <Title>Сейчас играет</Title>
-        <NotSupported>Браузер не поддерживает доступ к микрофону</NotSupported>
+        <Title>Now playing</Title>
+        <NotSupported>This browser does not support microphone access</NotSupported>
       </Wrapper>
     );
   }
@@ -87,9 +119,9 @@ export function LiveNoteIndicator({
   if (!isListening) {
     return (
       <Wrapper>
-        <Title>Сейчас играет</Title>
+        <Title>Now playing</Title>
         <Button type="button" onClick={onToggleMic}>
-          Включить микрофон
+          Enable microphone
         </Button>
         <MicIndicator isListening={false} hasError={!!error} volume={0} />
       </Wrapper>
@@ -98,14 +130,14 @@ export function LiveNoteIndicator({
 
   return (
     <Wrapper>
-      <Title>Сейчас играет</Title>
+      <Title>Now playing</Title>
       {detected ? <NoteName>{detected.note}</NoteName> : <Placeholder>—</Placeholder>}
       <Details>
-        {detected ? `Октава ${detected.octave}, ${detected.cents > 0 ? '+' : ''}${detected.cents} центов` : ' '}
+        {detected ? `Octave ${detected.octave}, ${detected.cents > 0 ? '+' : ''}${detected.cents} cents` : ' '}
       </Details>
       <MicIndicator isListening={isListening} hasError={!!error} volume={volume} />
       <Button type="button" onClick={onToggleMic}>
-        Выключить микрофон
+        Disable microphone
       </Button>
     </Wrapper>
   );
