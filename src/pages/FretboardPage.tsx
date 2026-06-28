@@ -206,7 +206,7 @@ export function FretboardPage() {
     if (fireworkSettings.enabled) {
       const { burstCount } = DENSITY_CONFIG[fireworkSettings.density];
       const durationMs = DURATION_CONFIG[fireworkSettings.duration];
-      const totalMs = getFireworkTotalDurationMs(burstCount, durationMs, fireworkSettings.trails);
+      const totalMs = getFireworkTotalDurationMs(burstCount, durationMs);
 
       setFireworkKey((key) => key + 1);
       setShowFirework(true);

@@ -1,12 +1,14 @@
-import { useMemo } from 'react';
-import styled, { keyframes } from 'styled-components';
+import { useEffect, useRef } from 'react';
+import styled from 'styled-components';
 import type { FireworkDensity, FireworkDuration, FireworkSize } from '../../storage/fireworkSettings';
 
-const COLORS = ['#4fd1c5', '#f6c453', '#f06595', '#74c0fc', '#69db7c', '#da77f2'];
-const TRAIL_STEPS = 3;
-const TRAIL_STEP_DELAY_MS = 35;
-const BURST_STAGGER_MS = 80;
-const MAX_PARTICLE_DELAY_MS = 150;
+// Tron/Akira-style electric neon palette.
+const NEON_COLORS = ['#00fff7', '#ff00e6', '#00aaff', '#ff0050', '#39ff14', '#bf00ff', '#fff200'];
+
+const BURST_INTERVAL_MS = 90;
+const TRAIL_HISTORY_LENGTH = 10;
+const GRAVITY = 0.00055;
+const DRAG = 0.985;
 
 // Higher density means both more particles per burst AND more simultaneous bursts.
 export const DENSITY_CONFIG: Record<FireworkDensity, { particlesPerBurst: number; burstCount: number }> = {
@@ -16,9 +18,9 @@ export const DENSITY_CONFIG: Record<FireworkDensity, { particlesPerBurst: number
 };
 
 export const SIZE_CONFIG: Record<FireworkSize, { particleSize: number; distanceMultiplier: number }> = {
-  small: { particleSize: 4, distanceMultiplier: 0.7 },
-  medium: { particleSize: 6, distanceMultiplier: 1 },
-  large: { particleSize: 9, distanceMultiplier: 1.5 },
+  small: { particleSize: 3, distanceMultiplier: 0.7 },
+  medium: { particleSize: 4.5, distanceMultiplier: 1 },
+  large: { particleSize: 7, distanceMultiplier: 1.5 },
 };
 
 export const DURATION_CONFIG: Record<FireworkDuration, number> = {
@@ -27,143 +29,28 @@ export const DURATION_CONFIG: Record<FireworkDuration, number> = {
   long: 1500,
 };
 
-/**
- * How long the Firework component needs to stay mounted to let every burst, particle,
- * and (if enabled) trail dot finish its animation — including the staggered start
- * delays, not just the animation's own duration.
- */
-export function getFireworkTotalDurationMs(
-  burstCount: number,
-  durationMs: number,
-  trailsEnabled: boolean,
-): number {
-  const maxBurstStagger = (burstCount - 1) * BURST_STAGGER_MS;
-  const maxTrailDelay = trailsEnabled ? TRAIL_STEPS * TRAIL_STEP_DELAY_MS : 0;
-  return maxBurstStagger + MAX_PARTICLE_DELAY_MS + maxTrailDelay + durationMs + 150;
+/** How long the Firework needs to stay mounted for every staggered burst to fully fade. */
+export function getFireworkTotalDurationMs(burstCount: number, durationMs: number): number {
+  return (burstCount - 1) * BURST_INTERVAL_MS + durationMs + 250;
 }
 
-const burst = keyframes`
-  0% {
-    transform: translate(-50%, -50%) translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.2);
-    opacity: 0;
-  }
-`;
-
-// Trail dots ride the exact same path as their particle but start a little later, so at
-// any moment they sit behind it along the same line — and fade in (rather than start at
-// full opacity) so they read as a dimmer tail instead of a second firework.
-const trail = keyframes`
-  0% {
-    transform: translate(-50%, -50%) translate(0, 0) scale(1);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.55;
-  }
-  100% {
-    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.1);
-    opacity: 0;
-  }
-`;
-
-const Overlay = styled.div`
+const Canvas = styled.canvas`
   position: fixed;
   inset: 0;
   pointer-events: none;
-  overflow: hidden;
   z-index: 999;
 `;
 
-const BurstOrigin = styled.div<{ $left: number; $top: number }>`
-  position: absolute;
-  left: ${({ $left }) => $left}%;
-  top: ${({ $top }) => $top}%;
-`;
-
-const Particle = styled.span<{
-  $tx: number;
-  $ty: number;
-  $color: string;
-  $delay: number;
-  $size: number;
-  $durationMs: number;
-}>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: ${({ $size }) => $size}px;
-  height: ${({ $size }) => $size}px;
-  border-radius: 50%;
-  background: ${({ $color }) => $color};
-  --tx: ${({ $tx }) => $tx}px;
-  --ty: ${({ $ty }) => $ty}px;
-  animation: ${burst} ${({ $durationMs }) => $durationMs}ms ease-out forwards;
-  animation-delay: ${({ $delay }) => $delay}ms;
-`;
-
-const TrailDot = styled.span<{
-  $tx: number;
-  $ty: number;
-  $color: string;
-  $delay: number;
-  $size: number;
-  $durationMs: number;
-}>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: ${({ $size }) => $size}px;
-  height: ${({ $size }) => $size}px;
-  border-radius: 50%;
-  background: ${({ $color }) => $color};
-  --tx: ${({ $tx }) => $tx}px;
-  --ty: ${({ $ty }) => $ty}px;
-  animation: ${trail} ${({ $durationMs }) => $durationMs}ms ease-out forwards;
-  animation-delay: ${({ $delay }) => $delay}ms;
-`;
-
-interface ParticleSpec {
-  tx: number;
-  ty: number;
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
   color: string;
-  delay: number;
-}
-
-interface BurstSpec {
-  left: number;
-  top: number;
-  particles: ParticleSpec[];
-}
-
-function createParticles(particlesPerBurst: number, distanceMultiplier: number): ParticleSpec[] {
-  return Array.from({ length: particlesPerBurst }, () => {
-    const angle = Math.random() * Math.PI * 2;
-    const distance = (35 + Math.random() * 80) * distanceMultiplier;
-    return {
-      tx: Math.cos(angle) * distance,
-      ty: Math.sin(angle) * distance,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      delay: Math.random() * MAX_PARTICLE_DELAY_MS,
-    };
-  });
-}
-
-function createBursts(
-  burstCount: number,
-  particlesPerBurst: number,
-  distanceMultiplier: number,
-): BurstSpec[] {
-  return Array.from({ length: burstCount }, (_, index) => {
-    const particles = createParticles(particlesPerBurst, distanceMultiplier).map((p) => ({
-      ...p,
-      delay: p.delay + index * BURST_STAGGER_MS,
-    }));
-    return { left: 10 + Math.random() * 80, top: 10 + Math.random() * 80, particles };
-  });
+  size: number;
+  history: { x: number; y: number }[];
 }
 
 interface FireworkProps {
@@ -175,6 +62,9 @@ interface FireworkProps {
   durationMs?: number;
 }
 
+// Runs entirely on a <canvas> with a vanilla requestAnimationFrame loop instead of one
+// React-managed DOM node + CSS animation per particle — hundreds of those were causing
+// the layout/paint jank. React only mounts the canvas once; nothing here re-renders.
 export function Firework({
   particlesPerBurst = DENSITY_CONFIG.medium.particlesPerBurst,
   burstCount = DENSITY_CONFIG.medium.burstCount,
@@ -183,41 +73,118 @@ export function Firework({
   distanceMultiplier = SIZE_CONFIG.medium.distanceMultiplier,
   durationMs = DURATION_CONFIG.normal,
 }: FireworkProps) {
-  const bursts = useMemo(
-    () => createBursts(burstCount, particlesPerBurst, distanceMultiplier),
-    [burstCount, particlesPerBurst, distanceMultiplier],
-  );
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  return (
-    <Overlay>
-      {bursts.map((b, i) => (
-        <BurstOrigin key={i} $left={b.left} $top={b.top}>
-          {b.particles.map((p, j) => (
-            <span key={j}>
-              {trails &&
-                Array.from({ length: TRAIL_STEPS }, (_, step) => (
-                  <TrailDot
-                    key={step}
-                    $tx={p.tx}
-                    $ty={p.ty}
-                    $color={p.color}
-                    $delay={p.delay + (step + 1) * TRAIL_STEP_DELAY_MS}
-                    $size={Math.max(1, particleSize - (step + 1) * 1.5)}
-                    $durationMs={durationMs}
-                  />
-                ))}
-              <Particle
-                $tx={p.tx}
-                $ty={p.ty}
-                $color={p.color}
-                $delay={p.delay}
-                $size={particleSize}
-                $durationMs={durationMs}
-              />
-            </span>
-          ))}
-        </BurstOrigin>
-      ))}
-    </Overlay>
-  );
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const resize = () => {
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    let particles: Particle[] = [];
+    let rafId = 0;
+    let lastTime = performance.now();
+    let burstsRemaining = burstCount;
+    let burstTimer = BURST_INTERVAL_MS; // spawn the first burst immediately
+
+    function spawnBurst() {
+      const originX = window.innerWidth * (0.1 + Math.random() * 0.8);
+      const originY = window.innerHeight * (0.1 + Math.random() * 0.8);
+      for (let i = 0; i < particlesPerBurst; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (0.08 + Math.random() * 0.18) * distanceMultiplier;
+        particles.push({
+          x: originX,
+          y: originY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: durationMs,
+          maxLife: durationMs,
+          color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+          size: particleSize * (0.7 + Math.random() * 0.6),
+          history: [],
+        });
+      }
+    }
+
+    function frame(now: number) {
+      const dt = Math.min(now - lastTime, 50);
+      lastTime = now;
+
+      burstTimer += dt;
+      if (burstsRemaining > 0 && burstTimer >= BURST_INTERVAL_MS) {
+        burstTimer = 0;
+        burstsRemaining -= 1;
+        spawnBurst();
+      }
+
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      ctx.globalCompositeOperation = 'lighter';
+
+      particles = particles.filter((p) => p.life > 0);
+      for (const p of particles) {
+        p.vy += GRAVITY * dt;
+        p.vx *= DRAG;
+        p.vy *= DRAG;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+
+        const alpha = Math.max(p.life / p.maxLife, 0);
+
+        if (trails) {
+          p.history.push({ x: p.x, y: p.y });
+          if (p.history.length > TRAIL_HISTORY_LENGTH) p.history.shift();
+
+          for (let i = 1; i < p.history.length; i += 1) {
+            const t = i / p.history.length;
+            ctx.beginPath();
+            ctx.moveTo(p.history[i - 1].x, p.history[i - 1].y);
+            ctx.lineTo(p.history[i].x, p.history[i].y);
+            ctx.strokeStyle = p.color;
+            ctx.globalAlpha = alpha * t * 0.65;
+            ctx.lineWidth = Math.max(0.5, p.size * t * 0.7);
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = p.color;
+            ctx.stroke();
+          }
+        }
+
+        ctx.globalAlpha = alpha;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(0.4, p.size * (0.5 + alpha * 0.5)), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.globalCompositeOperation = 'source-over';
+
+      if (particles.length > 0 || burstsRemaining > 0) {
+        rafId = requestAnimationFrame(frame);
+      }
+    }
+
+    rafId = requestAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', resize);
+    };
+  }, [particlesPerBurst, burstCount, trails, particleSize, distanceMultiplier, durationMs]);
+
+  return <Canvas ref={canvasRef} />;
 }
