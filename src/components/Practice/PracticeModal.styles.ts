@@ -20,7 +20,7 @@ export const Card = styled.div`
   max-height: 90vh;
   overflow-y: auto;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 14px;
   }
 `;
@@ -29,7 +29,7 @@ export const Title = styled.h2`
   margin: 0 0 20px;
   font-size: 20px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     margin: 0 0 10px;
     font-size: 15px;
   }
@@ -38,7 +38,7 @@ export const Title = styled.h2`
 export const FieldGroup = styled.div`
   margin-bottom: 20px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     margin-bottom: 10px;
   }
 `;

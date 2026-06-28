@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   justify-content: center;
   gap: 14px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 8px;
     gap: 4px;
     border-radius: 8px;
@@ -26,7 +26,7 @@ const Title = styled.div`
   color: ${({ theme }) => theme.colors.textMuted};
   text-align: center;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
   }
 `;
@@ -37,7 +37,7 @@ const NoteName = styled.div`
   color: ${({ theme }) => theme.colors.accent};
   line-height: 1;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 22px;
   }
 `;
@@ -48,7 +48,7 @@ const Placeholder = styled.div`
   color: ${({ theme }) => theme.colors.fret};
   line-height: 1;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 16px;
   }
 `;
@@ -58,7 +58,7 @@ const Details = styled.div`
   color: ${({ theme }) => theme.colors.textMuted};
   min-height: 16px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
     min-height: 0;
   }
@@ -74,7 +74,7 @@ const Button = styled.button`
   background: ${({ theme }) => theme.colors.accent};
   color: ${({ theme }) => theme.colors.noteTextActive};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 5px 8px;
     font-size: 10px;
   }
@@ -85,7 +85,7 @@ const NotSupported = styled.div`
   color: #e07a7a;
   text-align: center;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
   }
 `;

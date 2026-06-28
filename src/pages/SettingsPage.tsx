@@ -23,7 +23,7 @@ const Content = styled.div`
   padding: 40px;
   overflow-y: auto;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 16px;
   }
 `;

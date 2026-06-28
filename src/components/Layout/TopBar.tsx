@@ -13,7 +13,7 @@ const Bar = styled.header`
   flex-wrap: wrap;
   flex-shrink: 0;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     gap: 10px;
     padding: 8px 12px;
   }
@@ -24,7 +24,7 @@ const Brand = styled.span`
   font-size: 17px;
   white-space: nowrap;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 13px;
   }
 `;
@@ -34,7 +34,7 @@ const Divider = styled.div`
   height: 24px;
   background: ${({ theme }) => theme.colors.fret};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     height: 16px;
   }
 `;
@@ -60,7 +60,7 @@ const NavButton = styled.button<{ $active: boolean }>`
     background: ${({ theme, $active }) => ($active ? theme.colors.accent : theme.colors.fret)};
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 6px 12px;
     font-size: 12px;
   }
@@ -73,7 +73,7 @@ const Actions = styled.div`
   flex-wrap: wrap;
   margin-left: auto;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     gap: 8px;
   }
 `;
@@ -98,7 +98,7 @@ const IconButton = styled.button`
     background: ${({ theme }) => theme.colors.fret};
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 26px;
     height: 26px;
     font-size: 12px;

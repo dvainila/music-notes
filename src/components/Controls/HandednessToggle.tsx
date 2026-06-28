@@ -12,7 +12,7 @@ const Label = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: 14px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     display: none;
   }
 `;
@@ -38,7 +38,7 @@ const Option = styled.button<{ $active: boolean }>`
     background: ${({ theme, $active }) => ($active ? theme.colors.accent : theme.colors.fret)};
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 5px 8px;
     font-size: 10px;
   }

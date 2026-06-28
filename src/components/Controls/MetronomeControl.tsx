@@ -28,7 +28,7 @@ const PlayButton = styled.button<{ $active: boolean }>`
     background: ${({ theme, $active }) => ($active ? theme.colors.accent : theme.colors.fret)};
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 26px;
     height: 26px;
     font-size: 10px;
@@ -45,7 +45,7 @@ const BpmInput = styled.input`
   font-size: 13px;
   text-align: center;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 34px;
     padding: 3px;
     font-size: 10px;
@@ -56,7 +56,7 @@ const BpmLabel = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textMuted};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     display: none;
   }
 `;
@@ -70,7 +70,7 @@ const TimeSignatureSelect = styled.select`
   font-size: 13px;
   cursor: pointer;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 3px;
     font-size: 10px;
   }
@@ -89,7 +89,7 @@ const BeatDot = styled.div<{ $active: boolean; $accent: boolean }>`
     $active ? theme.colors.accent : $accent ? theme.colors.string : theme.colors.fret};
   transition: background 0.1s ease;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 6px;
     height: 6px;
   }

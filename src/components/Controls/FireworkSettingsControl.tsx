@@ -23,7 +23,7 @@ const Label = styled.span`
   user-select: none;
   white-space: nowrap;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 10px;
     gap: 5px;
   }
@@ -59,7 +59,7 @@ const Switch = styled.input`
     transform: translateX(18px);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 28px;
     height: 16px;
 
@@ -83,7 +83,7 @@ const Select = styled.select`
   font-size: 13px;
   cursor: pointer;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 3px;
     font-size: 10px;
   }

@@ -29,7 +29,7 @@ export const Board = styled.div<{ $handedness: Handedness }>`
      the string label for left-handed mode — spilling into the cards beside it). */
   min-width: 0;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     grid-template-columns: ${({ $handedness }) =>
       $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
     padding: 6px 8px;
@@ -43,7 +43,7 @@ export const FretNumbers = styled.div`
   grid-template-columns: subgrid;
   margin-bottom: 10px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     margin-bottom: 2px;
   }
 `;
@@ -68,7 +68,7 @@ export const FretNumber = styled.div<{ $handedness: Handedness }>`
     color: ${({ theme }) => theme.colors.textMuted};
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 0 3px;
 
     span {
@@ -86,7 +86,7 @@ export const MarkerRow = styled.div`
   grid-template-columns: subgrid;
   height: 44px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     height: 14px;
   }
 `;
@@ -99,7 +99,7 @@ export const MarkerCell = styled.div<{ $handedness: Handedness }>`
   justify-content: ${({ $handedness }) => ($handedness === 'right' ? 'flex-start' : 'flex-end')};
   padding: 0 14px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 0 3px;
   }
 `;
@@ -111,7 +111,7 @@ export const MarkerSlot = styled.div`
   width: 36px;
   height: 100%;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 18px;
   }
 `;

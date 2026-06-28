@@ -10,7 +10,7 @@ const Wrapper = styled.label`
   font-size: 14px;
   white-space: nowrap;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 10px;
     gap: 5px;
   }
@@ -46,7 +46,7 @@ const Switch = styled.input`
     transform: translateX(18px);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 28px;
     height: 16px;
 

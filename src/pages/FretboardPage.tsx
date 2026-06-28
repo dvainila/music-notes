@@ -52,7 +52,7 @@ const StartButton = styled.button`
     cursor: default;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 7px 14px;
     font-size: 12px;
   }
@@ -68,7 +68,7 @@ const Content = styled.div`
   padding: 32px 40px;
   overflow: hidden;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     gap: 10px;
     padding: 10px 14px;
     overflow-y: auto;
@@ -109,7 +109,7 @@ const IdlePractice = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 12px;
     font-size: 11px;
   }

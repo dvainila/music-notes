@@ -10,7 +10,7 @@ const Dot = styled.div`
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4) inset;
   transform: translate(-50%, -50%);
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 7px;
     height: 7px;
   }

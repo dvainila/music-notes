@@ -31,7 +31,7 @@ const Label = styled.span`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textMuted};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
   }
 `;

@@ -26,7 +26,7 @@ export const StringLine = styled.div<{ $active: boolean; $thickness: number; $ha
   border-radius: 2px;
   transition: background 0.2s ease;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     ${({ $handedness }) =>
       $handedness === 'left' ? css`left: 0; right: 30px;` : css`left: 30px; right: 0;`}
     height: ${({ $thickness }) => Math.max(1, Math.round($thickness / 1.8))}px;
@@ -43,7 +43,7 @@ export const StringLabel = styled.div<{ $active: boolean }>`
   gap: 2px;
   color: ${({ theme, $active }) => ($active ? theme.colors.stringActive : theme.colors.textMuted)};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     gap: 0;
   }
 `;
@@ -53,7 +53,7 @@ export const StringNumber = styled.span`
   font-weight: 400;
   opacity: 0.7;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 7px;
   }
 `;
@@ -62,7 +62,7 @@ export const StringNoteName = styled.span`
   font-weight: 600;
   font-size: 17px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
   }
 `;
@@ -95,7 +95,7 @@ export const FretCell = styled.div<{
       border-right: 3px solid ${theme.colors.nut};
     `}
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 0 3px;
   }
 `;
@@ -114,7 +114,7 @@ export const NoteBubble = styled.div<{ $active: boolean }>`
   background: ${({ theme, $active }) => ($active ? theme.colors.noteBgActive : theme.colors.noteBg)};
   color: ${({ theme, $active }) => ($active ? theme.colors.noteTextActive : theme.colors.noteText)};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     width: 18px;
     height: 18px;
     font-size: 8px;

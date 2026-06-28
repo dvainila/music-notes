@@ -22,7 +22,7 @@ const Wrapper = styled.div<{ $correct: boolean }>`
       border-color: ${theme.colors.accent};
     `}
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 8px;
     gap: 4px;
     border-radius: 8px;
@@ -76,7 +76,7 @@ const Hint = styled.div`
   color: ${({ theme }) => theme.colors.textMuted};
   text-align: center;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
   }
 `;
@@ -86,7 +86,7 @@ const NoteName = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.colors.accent};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 22px;
   }
 `;
@@ -98,7 +98,7 @@ const StatusLine = styled.div<{ $correct: boolean }>`
   text-align: center;
   color: ${({ theme, $correct }) => ($correct ? theme.colors.accent : theme.colors.textMuted)};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
     min-height: 0;
   }
@@ -110,7 +110,7 @@ const Actions = styled.div`
   width: 100%;
   gap: 8px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     gap: 4px;
   }
 `;
@@ -125,7 +125,7 @@ const ToggleRow = styled.label`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textMuted};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     font-size: 9px;
     gap: 5px;
   }
@@ -174,7 +174,7 @@ const Button = styled.button<{ $variant?: 'primary' }>`
   background: ${({ theme, $variant }) => ($variant === 'primary' ? theme.colors.accent : theme.colors.fret)};
   color: ${({ theme, $variant }) => ($variant === 'primary' ? theme.colors.noteTextActive : theme.colors.noteText)};
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 500px) {
     padding: 5px 8px;
     font-size: 10px;
   }
