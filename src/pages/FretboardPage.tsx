@@ -5,7 +5,13 @@ import { Fretboard } from '../components/Fretboard/Fretboard';
 import { PracticeModal, type PracticeConfig } from '../components/Practice/PracticeModal';
 import { PracticeCard } from '../components/Practice/PracticeCard';
 import { LiveNoteIndicator } from '../components/Practice/LiveNoteIndicator';
-import { Firework, DENSITY_CONFIG } from '../components/Practice/Firework';
+import {
+  Firework,
+  DENSITY_CONFIG,
+  SIZE_CONFIG,
+  DURATION_CONFIG,
+  getFireworkTotalDurationMs,
+} from '../components/Practice/Firework';
 import { usePitchDetection } from '../audio/usePitchDetection';
 import { loadHandedness } from '../storage/handedness';
 import { loadShowSharps } from '../storage/sharps';
@@ -143,6 +149,9 @@ export function FretboardPage() {
 
   const pitch = usePitchDetection(targetFrequencies);
   const advanceTimeoutRef = useRef<number | null>(null);
+  const fireworkHideTimeoutRef = useRef<number | null>(null);
+  const [fireworkKey, setFireworkKey] = useState(0);
+  const [showFirework, setShowFirework] = useState(false);
 
   const isCorrect =
     !!practice &&
@@ -189,6 +198,24 @@ export function FretboardPage() {
   useEffect(() => {
     if (!isCorrect) return;
     advanceTimeoutRef.current = window.setTimeout(handleNextNote, NEXT_NOTE_DELAY_MS);
+
+    // Latch the firework on for a fixed duration instead of tying its visibility to the
+    // live isCorrect signal — the detected pitch can flicker false the instant the
+    // string's sound decays or changes, which was unmounting (and thus cutting off)
+    // the animation almost immediately, especially trails (which start even later).
+    if (fireworkSettings.enabled) {
+      const { burstCount } = DENSITY_CONFIG[fireworkSettings.density];
+      const durationMs = DURATION_CONFIG[fireworkSettings.duration];
+      const totalMs = getFireworkTotalDurationMs(burstCount, durationMs, fireworkSettings.trails);
+
+      setFireworkKey((key) => key + 1);
+      setShowFirework(true);
+      if (fireworkHideTimeoutRef.current !== null) {
+        window.clearTimeout(fireworkHideTimeoutRef.current);
+      }
+      fireworkHideTimeoutRef.current = window.setTimeout(() => setShowFirework(false), totalMs);
+    }
+
     return () => {
       if (advanceTimeoutRef.current !== null) {
         window.clearTimeout(advanceTimeoutRef.current);
@@ -196,6 +223,14 @@ export function FretboardPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCorrect]);
+
+  useEffect(() => {
+    return () => {
+      if (fireworkHideTimeoutRef.current !== null) {
+        window.clearTimeout(fireworkHideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const stringLabel = practice
     ? `${getStringNumber(practice.stringIndex)} (${STANDARD_TUNING[practice.stringIndex]})`
@@ -258,10 +293,12 @@ export function FretboardPage() {
         <PracticeModal onStart={handleStartPractice} onCancel={() => setIsModalOpen(false)} />
       )}
 
-      {isCorrect && fireworkSettings.enabled && (
+      {showFirework && fireworkSettings.enabled && (
         <Firework
-          key={practice?.currentNote}
+          key={fireworkKey}
           {...DENSITY_CONFIG[fireworkSettings.density]}
+          {...SIZE_CONFIG[fireworkSettings.size]}
+          durationMs={DURATION_CONFIG[fireworkSettings.duration]}
           trails={fireworkSettings.trails}
         />
       )}

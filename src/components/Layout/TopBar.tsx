@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { NavLink } from 'react-router-dom';
 import { useFullscreen } from '../../hooks/useFullscreen';
+import { useNavigation, type AppView } from '../../contexts/NavigationContext';
 
 const Bar = styled.header`
   display: flex;
@@ -44,27 +44,20 @@ const Links = styled.nav`
   gap: 8px;
 `;
 
-const StyledLink = styled(NavLink)`
+const NavButton = styled.button<{ $active: boolean }>`
   padding: 9px 18px;
   border-radius: 8px;
-  text-decoration: none;
+  border: none;
   font-weight: 600;
   font-size: 14px;
-  color: ${({ theme }) => theme.colors.textMuted};
+  cursor: pointer;
   white-space: nowrap;
   transition: background 0.2s ease, color 0.2s ease;
+  background: ${({ theme, $active }) => ($active ? theme.colors.accent : 'transparent')};
+  color: ${({ theme, $active }) => ($active ? theme.colors.noteTextActive : theme.colors.textMuted)};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.fret};
-  }
-
-  &.active {
-    background: ${({ theme }) => theme.colors.accent};
-    color: ${({ theme }) => theme.colors.noteTextActive};
-  }
-
-  &.active:hover {
-    background: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme, $active }) => ($active ? theme.colors.accent : theme.colors.fret)};
   }
 
   @media (max-width: 900px) {
@@ -116,17 +109,29 @@ interface TopBarProps {
   children?: ReactNode;
 }
 
+const NAV_ITEMS: { view: AppView; label: string }[] = [
+  { view: 'fretboard', label: 'Fretboard' },
+  { view: 'settings', label: 'Settings' },
+];
+
 export function TopBar({ children }: TopBarProps) {
   const fullscreen = useFullscreen();
+  const { view, setView } = useNavigation();
 
   return (
     <Bar>
       <Brand>🎸 Fretboard</Brand>
       <Links>
-        <StyledLink to="/" end>
-          Fretboard
-        </StyledLink>
-        <StyledLink to="/settings">Settings</StyledLink>
+        {NAV_ITEMS.map((item) => (
+          <NavButton
+            key={item.view}
+            type="button"
+            $active={view === item.view}
+            onClick={() => setView(item.view)}
+          >
+            {item.label}
+          </NavButton>
+        ))}
       </Links>
       <Actions>
         {children}
