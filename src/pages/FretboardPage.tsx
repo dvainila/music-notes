@@ -8,9 +8,11 @@ import { MetronomeControl } from '../components/Controls/MetronomeControl';
 import { PracticeModal, type PracticeConfig } from '../components/Practice/PracticeModal';
 import { PracticeCard } from '../components/Practice/PracticeCard';
 import { LiveNoteIndicator } from '../components/Practice/LiveNoteIndicator';
-import { Firework } from '../components/Practice/Firework';
+import { Firework, DENSITY_CONFIG } from '../components/Practice/Firework';
+import { FireworkSettingsControl } from '../components/Controls/FireworkSettingsControl';
 import { usePitchDetection } from '../audio/usePitchDetection';
 import { loadHandedness, saveHandedness } from '../storage/handedness';
+import { loadFireworkSettings, saveFireworkSettings } from '../storage/fireworkSettings';
 import { matchesAnyFrequency } from '../music/frequency';
 import {
   STANDARD_TUNING,
@@ -129,6 +131,7 @@ export function FretboardPage() {
   const [handedness, setHandedness] = useState<Handedness>(loadHandedness);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [practice, setPractice] = useState<PracticeState | null>(null);
+  const [fireworkSettings, setFireworkSettings] = useState(loadFireworkSettings);
 
   // The exact real frequencies for the practiced note on the practiced string (usually
   // one, occasionally two — the open string's note reappears an octave up at fret 12).
@@ -150,6 +153,11 @@ export function FretboardPage() {
   const handleHandednessChange = (value: Handedness) => {
     setHandedness(value);
     saveHandedness(value);
+  };
+
+  const handleFireworkSettingsChange = (settings: typeof fireworkSettings) => {
+    setFireworkSettings(settings);
+    saveFireworkSettings(settings);
   };
 
   const handleSelectString = (index: number) => {
@@ -213,6 +221,7 @@ export function FretboardPage() {
         <HandednessToggle value={handedness} onChange={handleHandednessChange} />
         <SharpToggle checked={showSharps} onChange={setShowSharps} />
         <MetronomeControl />
+        <FireworkSettingsControl value={fireworkSettings} onChange={handleFireworkSettingsChange} />
       </TopBar>
 
       <Content>
@@ -264,7 +273,9 @@ export function FretboardPage() {
         <PracticeModal onStart={handleStartPractice} onCancel={() => setIsModalOpen(false)} />
       )}
 
-      {isCorrect && <Firework key={practice?.currentNote} />}
+      {isCorrect && fireworkSettings.enabled && (
+        <Firework key={practice?.currentNote} {...DENSITY_CONFIG[fireworkSettings.density]} />
+      )}
     </Page>
   );
 }
