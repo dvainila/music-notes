@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { TopBar } from '../components/Layout/TopBar';
 import { Fretboard } from '../components/Fretboard/Fretboard';
@@ -11,9 +11,11 @@ import { LiveNoteIndicator } from '../components/Practice/LiveNoteIndicator';
 import { Firework } from '../components/Practice/Firework';
 import { usePitchDetection } from '../audio/usePitchDetection';
 import { loadHandedness, saveHandedness } from '../storage/handedness';
+import { matchesAnyFrequency } from '../music/frequency';
 import {
   STANDARD_TUNING,
   createNoteBag,
+  getNoteFrequencies,
   getStringNumber,
   type Handedness,
   type Note,
@@ -128,10 +130,22 @@ export function FretboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [practice, setPractice] = useState<PracticeState | null>(null);
 
-  const pitch = usePitchDetection();
+  // The exact real frequencies for the practiced note on the practiced string (usually
+  // one, occasionally two — the open string's note reappears an octave up at fret 12).
+  // Feeds both the detector's EQ boost and the stricter frequency-based match check
+  // below, instead of accepting any pitch that merely shares the same note letter.
+  const targetFrequencies = useMemo(
+    () => (practice ? getNoteFrequencies(practice.stringIndex, practice.currentNote) : undefined),
+    [practice?.stringIndex, practice?.currentNote],
+  );
+
+  const pitch = usePitchDetection(targetFrequencies);
   const advanceTimeoutRef = useRef<number | null>(null);
 
-  const isCorrect = !!practice && !!pitch.detected && pitch.detected.note === practice.currentNote;
+  const isCorrect =
+    !!practice &&
+    !!pitch.detected &&
+    matchesAnyFrequency(pitch.detected.frequency, targetFrequencies ?? []);
 
   const handleHandednessChange = (value: Handedness) => {
     setHandedness(value);

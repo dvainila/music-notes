@@ -6,6 +6,9 @@ export type Note = (typeof CHROMATIC_SCALE)[number];
 
 export const STANDARD_TUNING: Note[] = ['E', 'A', 'D', 'G', 'B', 'E'];
 
+// Open-string frequencies (Hz) in standard tuning, same index order as STANDARD_TUNING.
+export const STANDARD_TUNING_FREQUENCIES: number[] = [82.41, 110.0, 146.83, 196.0, 246.94, 329.63];
+
 export const FRET_COUNT = 12;
 
 export const MARKER_FRETS = new Set([3, 5, 7, 9]);
@@ -46,6 +49,27 @@ export function getPracticeNotes(openNote: Note, includeSharps: boolean): Practi
     }
   }
   return notes;
+}
+
+export function getFrequencyAt(stringIndex: number, fret: number): number {
+  return STANDARD_TUNING_FREQUENCIES[stringIndex] * 2 ** (fret / 12);
+}
+
+/**
+ * Every real fret position on a given string that produces this note (usually one,
+ * but the open string's note also reappears an octave up at fret 12). Used to check
+ * a detected pitch against the actual frequencies the player could be producing on
+ * the string being practiced, rather than just comparing note-name letters globally.
+ */
+export function getNoteFrequencies(stringIndex: number, note: Note): number[] {
+  const openNote = STANDARD_TUNING[stringIndex];
+  const frequencies: number[] = [];
+  for (let fret = 0; fret <= FRET_COUNT; fret += 1) {
+    if (getNoteAt(openNote, fret) === note) {
+      frequencies.push(getFrequencyAt(stringIndex, fret));
+    }
+  }
+  return frequencies;
 }
 
 export function getUniqueNotes(openNote: Note, includeSharps: boolean): Note[] {

@@ -33,6 +33,17 @@ const STABILITY_THRESHOLD = 4;
 
 const VOLUME_REPORT_STEP = 0.02;
 
+// A sharp rise in RMS between consecutive ticks is treated as a fresh pluck. When that
+// happens we clear the stability history so a freshly played note isn't out-voted by
+// whatever was still ringing/decaying from the previous one (e.g. an adjacent string).
+const ONSET_VOLUME_JUMP = 0.03;
+
+// How much we boost the expected frequency (in dB) when a practice target is known, and
+// how narrow that boost is (higher Q = narrower band, less likely to also lift a
+// neighboring string's pitch).
+const BOOST_GAIN_DB = 15;
+const BOOST_Q = 8;
+
 interface PitchDetectionState {
   isListening: boolean;
   detected: DetectedNote | null;
@@ -40,7 +51,14 @@ interface PitchDetectionState {
   error: string | null;
 }
 
-export function usePitchDetection() {
+/**
+ * @param targetFrequencies When provided (e.g. during practice mode, for the specific
+ * note/string being tested), a narrow EQ boost is tuned to the first of these
+ * frequencies before analysis. This raises the expected note's prominence relative to
+ * other strings ringing/resonating at the same time, instead of treating the whole
+ * 50Hz-1500Hz range as equally likely to contain the "real" note.
+ */
+export function usePitchDetection(targetFrequencies?: number[]) {
   const [state, setState] = useState<PitchDetectionState>({
     isListening: false,
     detected: null,
@@ -51,9 +69,31 @@ export function usePitchDetection() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<number | null>(null);
+  const boostRef = useRef<BiquadFilterNode | null>(null);
   const recentNotesRef = useRef<(DetectedNote['note'] | null)[]>([]);
   const lastReportedNoteRef = useRef<DetectedNote | null>(null);
   const lastReportedVolumeRef = useRef(0);
+  const prevVolumeRef = useRef(0);
+  const targetFrequenciesRef = useRef(targetFrequencies);
+  targetFrequenciesRef.current = targetFrequencies;
+
+  const applyBoost = useCallback(() => {
+    const boost = boostRef.current;
+    if (!boost) return;
+    const freqs = targetFrequenciesRef.current;
+    if (freqs && freqs.length > 0) {
+      boost.frequency.value = freqs[0];
+      boost.gain.value = BOOST_GAIN_DB;
+    } else {
+      boost.gain.value = 0;
+    }
+  }, []);
+
+  // Re-tune the boost live when the practice target changes (new note/string) while
+  // already listening, instead of only picking it up on the next start().
+  useEffect(() => {
+    applyBoost();
+  }, [targetFrequencies, applyBoost]);
 
   const stop = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -64,9 +104,11 @@ export function usePitchDetection() {
     streamRef.current = null;
     audioContextRef.current?.close();
     audioContextRef.current = null;
+    boostRef.current = null;
     recentNotesRef.current = [];
     lastReportedNoteRef.current = null;
     lastReportedVolumeRef.current = 0;
+    prevVolumeRef.current = 0;
     setState((prev) => ({ ...prev, isListening: false, detected: null, volume: 0 }));
   }, []);
 
@@ -120,12 +162,22 @@ export function usePitchDetection() {
       lowpass.type = 'lowpass';
       lowpass.frequency.value = 1500;
 
+      // Optional narrow boost around the expected note (see applyBoost) — flat/no-op
+      // until a practice target is set.
+      const boost = audioContext.createBiquadFilter();
+      boost.type = 'peaking';
+      boost.Q.value = BOOST_Q;
+      boost.gain.value = 0;
+      boostRef.current = boost;
+      applyBoost();
+
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = FFT_SIZE;
 
       source.connect(highpass);
       highpass.connect(lowpass);
-      lowpass.connect(analyser);
+      lowpass.connect(boost);
+      boost.connect(analyser);
 
       // A node graph that never reaches the destination isn't guaranteed to be part
       // of the "active" rendering graph per spec — Chrome tends to process it anyway,
@@ -152,6 +204,13 @@ export function usePitchDetection() {
           sumSquares += input[i] * input[i];
         }
         const volume = Math.sqrt(sumSquares / input.length);
+
+        // A fresh pluck shows up as a sharp jump in RMS — reset the vote history so a
+        // newly played note isn't out-voted by a still-ringing previous/adjacent string.
+        if (volume - prevVolumeRef.current > ONSET_VOLUME_JUMP) {
+          recentNotesRef.current = [];
+        }
+        prevVolumeRef.current = volume;
 
         const [pitch, clarity] = detector.findPitch(input, audioContext.sampleRate);
 
@@ -190,6 +249,7 @@ export function usePitchDetection() {
       recentNotesRef.current = [];
       lastReportedNoteRef.current = null;
       lastReportedVolumeRef.current = 0;
+      prevVolumeRef.current = 0;
       setState({ isListening: true, detected: null, volume: 0, error: null });
       intervalRef.current = window.setInterval(tick, ANALYSIS_INTERVAL_MS);
     } catch (err) {
@@ -202,7 +262,7 @@ export function usePitchDetection() {
         error: err instanceof Error ? err.message : 'Could not access the microphone',
       });
     }
-  }, []);
+  }, [applyBoost]);
 
   useEffect(() => stop, [stop]);
 
