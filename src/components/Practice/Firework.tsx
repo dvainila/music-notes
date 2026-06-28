@@ -6,7 +6,10 @@ import type { FireworkDensity, FireworkDuration, FireworkSize } from '../../stor
 const NEON_COLORS = ['#00fff7', '#ff00e6', '#00aaff', '#ff0050', '#39ff14', '#bf00ff', '#fff200'];
 
 const BURST_INTERVAL_MS = 90;
-const TRAIL_HISTORY_LENGTH = 5;
+// Drawn as a single connected polyline per particle (one stroke() call) rather than one
+// stroke() per segment, so a longer, more visible trail no longer costs proportionally
+// more draw calls — only a few more vertices in the same path.
+const TRAIL_HISTORY_LENGTH = 10;
 const GRAVITY = 0.00055;
 const DRAG = 0.985;
 const GLOW_SPRITE_SIZE = 64;
@@ -19,10 +22,13 @@ export const DENSITY_CONFIG: Record<FireworkDensity, { particlesPerBurst: number
   high: { particlesPerBurst: 65, burstCount: 12 },
 };
 
+// "Size" controls how far the particles fly (the explosion's spread), not how big each
+// dot looks — the dots themselves stay small across all three so the effect reads as a
+// shower of sparks rather than confetti.
 export const SIZE_CONFIG: Record<FireworkSize, { particleSize: number; distanceMultiplier: number }> = {
-  small: { particleSize: 3, distanceMultiplier: 0.7 },
-  medium: { particleSize: 4.5, distanceMultiplier: 1 },
-  large: { particleSize: 7, distanceMultiplier: 1.5 },
+  small: { particleSize: 2, distanceMultiplier: 0.55 },
+  medium: { particleSize: 2.5, distanceMultiplier: 1 },
+  large: { particleSize: 3, distanceMultiplier: 1.9 },
 };
 
 export const DURATION_CONFIG: Record<FireworkDuration, number> = {
@@ -235,18 +241,25 @@ export function Firework({
           p.historyHead = (p.historyHead + 1) % TRAIL_HISTORY_LENGTH;
           p.historyCount = Math.min(p.historyCount + 1, TRAIL_HISTORY_LENGTH);
 
-          // Plain additive-blended strokes, no shadowBlur — 'lighter' compositing
-          // already makes overlapping trail segments glow brighter on its own.
-          ctx.strokeStyle = p.color;
-          for (let i = 1; i < p.historyCount; i += 1) {
-            const fromIdx = (p.historyHead - i - 1 + 2 * TRAIL_HISTORY_LENGTH) % TRAIL_HISTORY_LENGTH;
-            const toIdx = (p.historyHead - i + 2 * TRAIL_HISTORY_LENGTH) % TRAIL_HISTORY_LENGTH;
-            const t = 1 - i / p.historyCount;
-            ctx.globalAlpha = alpha * t * 0.6;
-            ctx.lineWidth = Math.max(0.5, p.size * t * 0.7);
+          if (p.historyCount > 1) {
+            // One connected polyline from oldest to newest point — a single stroke()
+            // call per particle instead of one per segment. 'lighter' compositing makes
+            // it glow brighter where it overlaps the particle's own glow sprite or
+            // other trails, without needing shadowBlur.
+            const oldestIdx =
+              (p.historyHead - p.historyCount + 2 * TRAIL_HISTORY_LENGTH) % TRAIL_HISTORY_LENGTH;
+            ctx.strokeStyle = p.color;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = Math.max(1, p.size * 1.2);
+            ctx.globalAlpha = alpha * 0.5;
             ctx.beginPath();
-            ctx.moveTo(p.historyX[fromIdx], p.historyY[fromIdx]);
-            ctx.lineTo(p.historyX[toIdx], p.historyY[toIdx]);
+            let idx = oldestIdx;
+            ctx.moveTo(p.historyX[idx], p.historyY[idx]);
+            for (let i = 1; i < p.historyCount; i += 1) {
+              idx = (idx + 1) % TRAIL_HISTORY_LENGTH;
+              ctx.lineTo(p.historyX[idx], p.historyY[idx]);
+            }
             ctx.stroke();
           }
         }
