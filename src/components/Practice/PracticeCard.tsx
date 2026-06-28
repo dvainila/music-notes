@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import styled, { css } from 'styled-components';
 import type { Note } from '../../music/notes';
 
@@ -26,6 +27,42 @@ const Wrapper = styled.div<{ $correct: boolean }>`
     gap: 4px;
     border-radius: 8px;
   }
+`;
+
+// Card-flip mechanic: FlipScene gives the 3D viewing context, FlipCard is the part that
+// actually rotates (around the vertical axis, like turning a card left-to-right), and
+// each Face is pinned to whichever side faces the viewer at 0deg vs 180deg via
+// backface-visibility — the classic flip-card technique.
+const FlipScene = styled.div`
+  position: relative;
+  width: 100%;
+  perspective: 800px;
+`;
+
+const FlipCard = styled.div<{ $rotation: number }>`
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(${({ $rotation }) => $rotation}deg);
+  transition: transform 0.6s ease;
+`;
+
+const Face = styled.div<{ $back?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  backface-visibility: hidden;
+  ${({ $back }) =>
+    $back
+      ? css`
+          transform: rotateY(180deg);
+          position: absolute;
+          inset: 0;
+        `
+      : css`
+          position: relative;
+        `}
 `;
 
 const Hint = styled.div`
@@ -108,10 +145,44 @@ export function PracticeCard({
   onNext,
   onFinish,
 }: PracticeCardProps) {
+  // Two physical faces, alternately updated and revealed. flipCount only ever
+  // increases, so the card always spins the same way round rather than flipping back
+  // and forth — each correctly-played note turns it another half-turn to reveal the
+  // next one on what was, a moment ago, the hidden back.
+  const [flipCount, setFlipCount] = useState(0);
+  const [frontNote, setFrontNote] = useState(note);
+  const [backNote, setBackNote] = useState(note);
+  const prevNoteRef = useRef(note);
+
+  useEffect(() => {
+    if (note === prevNoteRef.current) return;
+    prevNoteRef.current = note;
+
+    setFlipCount((count) => {
+      const showingFront = count % 2 === 0;
+      if (showingFront) {
+        setBackNote(note);
+      } else {
+        setFrontNote(note);
+      }
+      return count + 1;
+    });
+  }, [note]);
+
   return (
     <Wrapper $correct={isCorrect}>
-      <Hint>Find this note on string {stringLabel}</Hint>
-      <NoteName>{note}</NoteName>
+      <FlipScene>
+        <FlipCard $rotation={flipCount * 180}>
+          <Face>
+            <Hint>Find this note on string {stringLabel}</Hint>
+            <NoteName>{frontNote}</NoteName>
+          </Face>
+          <Face $back>
+            <Hint>Find this note on string {stringLabel}</Hint>
+            <NoteName>{backNote}</NoteName>
+          </Face>
+        </FlipCard>
+      </FlipScene>
 
       <StatusLine $correct={isCorrect}>
         {isListeningForMatch
