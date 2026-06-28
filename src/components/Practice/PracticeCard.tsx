@@ -1,9 +1,7 @@
 import styled, { css } from 'styled-components';
 import type { Note } from '../../music/notes';
-import { Firework } from './Firework';
 
 const Wrapper = styled.div<{ $correct: boolean }>`
-  position: relative;
   height: 100%;
   width: 100%;
   background: ${({ theme }) => theme.colors.surface};
@@ -16,7 +14,6 @@ const Wrapper = styled.div<{ $correct: boolean }>`
   gap: 14px;
   border: 2px solid transparent;
   transition: border-color 0.2s ease;
-  overflow: hidden;
 
   ${({ $correct, theme }) =>
     $correct &&
@@ -113,7 +110,6 @@ export function PracticeCard({
 }: PracticeCardProps) {
   return (
     <Wrapper $correct={isCorrect}>
-      {isCorrect && <Firework key={note} />}
       <Hint>Find this note on string {stringLabel}</Hint>
       <NoteName>{note}</NoteName>
 

@@ -8,6 +8,7 @@ import { MetronomeControl } from '../components/Controls/MetronomeControl';
 import { PracticeModal, type PracticeConfig } from '../components/Practice/PracticeModal';
 import { PracticeCard } from '../components/Practice/PracticeCard';
 import { LiveNoteIndicator } from '../components/Practice/LiveNoteIndicator';
+import { Firework } from '../components/Practice/Firework';
 import { usePitchDetection } from '../audio/usePitchDetection';
 import { loadHandedness, saveHandedness } from '../storage/handedness';
 import {
@@ -248,6 +249,8 @@ export function FretboardPage() {
       {isModalOpen && (
         <PracticeModal onStart={handleStartPractice} onCancel={() => setIsModalOpen(false)} />
       )}
+
+      {isCorrect && <Firework key={practice?.currentNote} />}
     </Page>
   );
 }
