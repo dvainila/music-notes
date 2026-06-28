@@ -115,6 +115,54 @@ const Actions = styled.div`
   }
 `;
 
+const ToggleRow = styled.label`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+
+  @media (max-width: 900px) {
+    font-size: 9px;
+    gap: 5px;
+  }
+`;
+
+const Switch = styled.input`
+  appearance: none;
+  width: 34px;
+  height: 19px;
+  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.fret};
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+
+  &:checked {
+    background: ${({ theme }) => theme.colors.accent};
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s ease;
+  }
+
+  &:checked::before {
+    transform: translateX(15px);
+  }
+`;
+
 const Button = styled.button<{ $variant?: 'primary' }>`
   width: 100%;
   padding: 10px 14px;
@@ -138,6 +186,8 @@ interface PracticeCardProps {
   isListeningForMatch: boolean;
   isCorrect: boolean;
   detectedNote: Note | null;
+  showNotesOnString: boolean;
+  onToggleShowNotes: (show: boolean) => void;
   onNext: () => void;
   onFinish: () => void;
 }
@@ -148,6 +198,8 @@ export function PracticeCard({
   isListeningForMatch,
   isCorrect,
   detectedNote,
+  showNotesOnString,
+  onToggleShowNotes,
   onNext,
   onFinish,
 }: PracticeCardProps) {
@@ -193,6 +245,14 @@ export function PracticeCard({
             <Hint>Find this note on string {stringLabel}</Hint>
             <NoteName>{frontNote}</NoteName>
             <StatusLine $correct={isCorrect}>{status}</StatusLine>
+            <ToggleRow>
+              <Switch
+                type="checkbox"
+                checked={showNotesOnString}
+                onChange={(e) => onToggleShowNotes(e.target.checked)}
+              />
+              Show notes on string
+            </ToggleRow>
             <Actions>
               <Button type="button" $variant="primary" onClick={onNext}>
                 Next note
@@ -206,6 +266,14 @@ export function PracticeCard({
             <Hint>Find this note on string {stringLabel}</Hint>
             <NoteName>{backNote}</NoteName>
             <StatusLine $correct={isCorrect}>{status}</StatusLine>
+            <ToggleRow>
+              <Switch
+                type="checkbox"
+                checked={showNotesOnString}
+                onChange={(e) => onToggleShowNotes(e.target.checked)}
+              />
+              Show notes on string
+            </ToggleRow>
             <Actions>
               <Button type="button" $variant="primary" onClick={onNext}>
                 Next note

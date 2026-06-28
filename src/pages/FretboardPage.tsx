@@ -186,6 +186,11 @@ export function FretboardPage() {
     setPractice({ ...practice, currentNote, noteQueue });
   };
 
+  const handleToggleShowNotes = (show: boolean) => {
+    if (!practice) return;
+    setPractice({ ...practice, showNotesOnString: show });
+  };
+
   const handleFinishPractice = () => {
     setPractice(null);
     setSelectedString(null);
@@ -274,6 +279,8 @@ export function FretboardPage() {
               isListeningForMatch={pitch.isListening}
               isCorrect={isCorrect}
               detectedNote={pitch.detected?.note ?? null}
+              showNotesOnString={practice.showNotesOnString}
+              onToggleShowNotes={handleToggleShowNotes}
               onNext={handleNextNote}
               onFinish={handleFinishPractice}
             />
