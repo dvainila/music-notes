@@ -78,14 +78,10 @@ const Content = styled.div`
 const FretArea = styled.div`
   grid-area: fret;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
   min-width: 0;
   min-height: 0;
-
-  @media (max-width: 900px) {
-    align-items: stretch;
-  }
 `;
 
 const NoteArea = styled.div`

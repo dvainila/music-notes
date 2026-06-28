@@ -15,6 +15,8 @@ export const Board = styled.div<{ $handedness: Handedness }>`
   display: grid;
   grid-template-columns: ${({ $handedness }) =>
     $handedness === 'left' ? 'repeat(12, 1fr) 70px' : '70px repeat(12, 1fr)'};
+  grid-template-rows: auto 1fr 1fr 1fr auto 1fr 1fr 1fr;
+  height: 100%;
   background: ${({ theme }) => theme.colors.surface};
   border-radius: 14px;
   padding: 40px 32px;
@@ -24,8 +26,6 @@ export const Board = styled.div<{ $handedness: Handedness }>`
   @media (max-width: 900px) {
     grid-template-columns: ${({ $handedness }) =>
       $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
-    grid-template-rows: auto 1fr 1fr 1fr auto 1fr 1fr 1fr;
-    height: 100%;
     padding: 6px 8px;
     border-radius: 10px;
   }

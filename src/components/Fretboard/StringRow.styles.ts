@@ -7,14 +7,11 @@ export const Row = styled.div<{ $active: boolean; $dimmed: boolean }>`
   display: grid;
   grid-template-columns: subgrid;
   align-items: center;
-  height: 70px;
+  height: 100%;
+  min-height: 36px;
   cursor: pointer;
   opacity: ${({ $dimmed }) => ($dimmed ? 0.35 : 1)};
   transition: opacity 0.2s ease;
-
-  @media (max-width: 900px) {
-    height: 100%;
-  }
 `;
 
 export const StringLine = styled.div<{ $active: boolean; $thickness: number; $handedness: Handedness }>`
