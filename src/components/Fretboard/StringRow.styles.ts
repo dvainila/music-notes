@@ -1,11 +1,11 @@
 import styled, { css } from 'styled-components';
 import type { Handedness } from '../../music/notes';
 
-export const Row = styled.div<{ $active: boolean; $dimmed: boolean; $handedness: Handedness }>`
+export const Row = styled.div<{ $active: boolean; $dimmed: boolean }>`
+  grid-column: 1 / -1;
   position: relative;
   display: grid;
-  grid-template-columns: ${({ $handedness }) =>
-    $handedness === 'left' ? 'repeat(12, 1fr) 70px' : '70px repeat(12, 1fr)'};
+  grid-template-columns: subgrid;
   align-items: center;
   height: 70px;
   cursor: pointer;
@@ -13,11 +13,7 @@ export const Row = styled.div<{ $active: boolean; $dimmed: boolean; $handedness:
   transition: opacity 0.2s ease;
 
   @media (max-width: 900px) {
-    grid-template-columns: ${({ $handedness }) =>
-      $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
-    height: auto;
-    flex: 1;
-    min-height: 0;
+    height: 100%;
   }
 `;
 

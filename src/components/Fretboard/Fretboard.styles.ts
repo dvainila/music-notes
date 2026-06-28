@@ -1,7 +1,20 @@
 import styled from 'styled-components';
 import type { Handedness } from '../../music/notes';
 
-export const Board = styled.div`
+// Board is the single source of truth for column tracks. FretNumbers, MarkerRow, and
+// each StringRow use `grid-template-columns: subgrid` to inherit these exact tracks
+// instead of each redeclaring "repeat(12, 1fr)" in their own separate grid — multiple
+// independent grids with identical CSS can still round fractional 1fr pixel widths
+// slightly differently from one another, which showed up as fret columns drifting a
+// pixel left/right between adjacent strings. Subgrid guarantees they're identical.
+//
+// Row order is fixed (8 rows: numbers, 3 strings, the marker row, 3 more strings) since
+// the app always renders exactly 6 strings with the marker row in the middle — see
+// Fretboard.tsx's middleStringIndex.
+export const Board = styled.div<{ $handedness: Handedness }>`
+  display: grid;
+  grid-template-columns: ${({ $handedness }) =>
+    $handedness === 'left' ? 'repeat(12, 1fr) 70px' : '70px repeat(12, 1fr)'};
   background: ${({ theme }) => theme.colors.surface};
   border-radius: 14px;
   padding: 40px 32px;
@@ -9,25 +22,23 @@ export const Board = styled.div`
   max-width: 1180px;
 
   @media (max-width: 900px) {
+    grid-template-columns: ${({ $handedness }) =>
+      $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
+    grid-template-rows: auto 1fr 1fr 1fr auto 1fr 1fr 1fr;
     height: 100%;
-    display: flex;
-    flex-direction: column;
     padding: 6px 8px;
     border-radius: 10px;
   }
 `;
 
-export const FretNumbers = styled.div<{ $handedness: Handedness }>`
+export const FretNumbers = styled.div`
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: ${({ $handedness }) =>
-    $handedness === 'left' ? 'repeat(12, 1fr) 70px' : '70px repeat(12, 1fr)'};
+  grid-template-columns: subgrid;
   margin-bottom: 10px;
 
   @media (max-width: 900px) {
-    grid-template-columns: ${({ $handedness }) =>
-      $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
     margin-bottom: 2px;
-    flex-shrink: 0;
   }
 `;
 
@@ -62,17 +73,14 @@ export const FretNumber = styled.div<{ $handedness: Handedness }>`
 
 export const Spacer = styled.div``;
 
-export const MarkerRow = styled.div<{ $handedness: Handedness }>`
+export const MarkerRow = styled.div`
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: ${({ $handedness }) =>
-    $handedness === 'left' ? 'repeat(12, 1fr) 70px' : '70px repeat(12, 1fr)'};
+  grid-template-columns: subgrid;
   height: 44px;
 
   @media (max-width: 900px) {
-    grid-template-columns: ${({ $handedness }) =>
-      $handedness === 'left' ? 'repeat(12, 1fr) 30px' : '30px repeat(12, 1fr)'};
     height: 14px;
-    flex-shrink: 0;
   }
 `;
 

@@ -67,13 +67,11 @@ export function Fretboard({
   const displayOrder = STANDARD_TUNING.map((_, index) => index).reverse();
 
   return (
-    <Board>
-      <FretNumbers $handedness={handedness}>{renderRow(fretNumberCells)}</FretNumbers>
+    <Board $handedness={handedness}>
+      <FretNumbers>{renderRow(fretNumberCells)}</FretNumbers>
       {displayOrder.map((stringIndex, position) => (
         <Fragment key={stringIndex}>
-          {position === middleStringIndex && (
-            <MarkerRow $handedness={handedness}>{renderRow(markerCells)}</MarkerRow>
-          )}
+          {position === middleStringIndex && <MarkerRow>{renderRow(markerCells)}</MarkerRow>}
           <StringRow
             openNote={STANDARD_TUNING[stringIndex]}
             stringIndex={stringIndex}

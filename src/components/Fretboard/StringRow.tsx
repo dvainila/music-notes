@@ -51,12 +51,7 @@ export function StringRow({
   });
 
   return (
-    <Row
-      $active={isSelected}
-      $dimmed={isDimmed}
-      $handedness={handedness}
-      onClick={() => onSelect(stringIndex)}
-    >
+    <Row $active={isSelected} $dimmed={isDimmed} onClick={() => onSelect(stringIndex)}>
       {handedness === 'left' ? (
         <>
           {fretCells}
