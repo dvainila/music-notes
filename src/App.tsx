@@ -5,6 +5,7 @@ import { GlobalStyle } from './GlobalStyle';
 import { router } from './router';
 import { useShouldPromptRotate } from './hooks/useOrientation';
 import { RotateDeviceOverlay } from './components/Layout/RotateDeviceOverlay';
+import { MetronomeProvider } from './contexts/MetronomeContext';
 
 function App() {
   const shouldPromptRotate = useShouldPromptRotate();
@@ -12,7 +13,9 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
-      {shouldPromptRotate ? <RotateDeviceOverlay /> : <RouterProvider router={router} />}
+      <MetronomeProvider>
+        {shouldPromptRotate ? <RotateDeviceOverlay /> : <RouterProvider router={router} />}
+      </MetronomeProvider>
     </ThemeProvider>
   );
 }

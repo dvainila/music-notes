@@ -2,24 +2,20 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { TopBar } from '../components/Layout/TopBar';
 import { Fretboard } from '../components/Fretboard/Fretboard';
-import { SharpToggle } from '../components/Controls/SharpToggle';
-import { HandednessToggle } from '../components/Controls/HandednessToggle';
-import { MetronomeControl } from '../components/Controls/MetronomeControl';
 import { PracticeModal, type PracticeConfig } from '../components/Practice/PracticeModal';
 import { PracticeCard } from '../components/Practice/PracticeCard';
 import { LiveNoteIndicator } from '../components/Practice/LiveNoteIndicator';
 import { Firework, DENSITY_CONFIG } from '../components/Practice/Firework';
-import { FireworkSettingsControl } from '../components/Controls/FireworkSettingsControl';
 import { usePitchDetection } from '../audio/usePitchDetection';
-import { loadHandedness, saveHandedness } from '../storage/handedness';
-import { loadFireworkSettings, saveFireworkSettings } from '../storage/fireworkSettings';
+import { loadHandedness } from '../storage/handedness';
+import { loadShowSharps } from '../storage/sharps';
+import { loadFireworkSettings } from '../storage/fireworkSettings';
 import { matchesAnyFrequency } from '../music/frequency';
 import {
   STANDARD_TUNING,
   createNoteBag,
   getNoteFrequencies,
   getStringNumber,
-  type Handedness,
   type Note,
 } from '../music/notes';
 
@@ -127,11 +123,14 @@ const isMicSupported = typeof navigator !== 'undefined' && !!navigator.mediaDevi
 
 export function FretboardPage() {
   const [selectedString, setSelectedString] = useState<number | null>(null);
-  const [showSharps, setShowSharps] = useState(false);
-  const [handedness, setHandedness] = useState<Handedness>(loadHandedness);
+  // These are configured on the settings page and persisted to localStorage; reloading
+  // them here on mount is enough to stay in sync, since navigating to another route
+  // fully unmounts this page anyway (no need for a live cross-page subscription).
+  const [showSharps] = useState(loadShowSharps);
+  const [handedness] = useState(loadHandedness);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [practice, setPractice] = useState<PracticeState | null>(null);
-  const [fireworkSettings, setFireworkSettings] = useState(loadFireworkSettings);
+  const [fireworkSettings] = useState(loadFireworkSettings);
 
   // The exact real frequencies for the practiced note on the practiced string (usually
   // one, occasionally two — the open string's note reappears an octave up at fret 12).
@@ -149,16 +148,6 @@ export function FretboardPage() {
     !!practice &&
     !!pitch.detected &&
     matchesAnyFrequency(pitch.detected.frequency, targetFrequencies ?? []);
-
-  const handleHandednessChange = (value: Handedness) => {
-    setHandedness(value);
-    saveHandedness(value);
-  };
-
-  const handleFireworkSettingsChange = (settings: typeof fireworkSettings) => {
-    setFireworkSettings(settings);
-    saveFireworkSettings(settings);
-  };
 
   const handleSelectString = (index: number) => {
     if (practice) return;
@@ -218,10 +207,6 @@ export function FretboardPage() {
         <StartButton type="button" onClick={() => setIsModalOpen(true)} disabled={!!practice}>
           Start note practice
         </StartButton>
-        <HandednessToggle value={handedness} onChange={handleHandednessChange} />
-        <SharpToggle checked={showSharps} onChange={setShowSharps} />
-        <MetronomeControl />
-        <FireworkSettingsControl value={fireworkSettings} onChange={handleFireworkSettingsChange} />
       </TopBar>
 
       <Content>

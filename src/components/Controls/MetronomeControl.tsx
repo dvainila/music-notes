@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useMetronome } from '../../audio/useMetronome';
+import { useMetronomeContext } from '../../contexts/MetronomeContext';
 
 const Wrapper = styled.div`
   display: flex;
@@ -103,7 +103,8 @@ const TIME_SIGNATURES = [
 ];
 
 export function MetronomeControl() {
-  const { bpm, setBpm, beatsPerBar, setBeatsPerBar, isPlaying, currentBeat, toggle } = useMetronome();
+  const { bpm, setBpm, beatsPerBar, setBeatsPerBar, isPlaying, currentBeat, toggle } =
+    useMetronomeContext();
 
   return (
     <Wrapper>

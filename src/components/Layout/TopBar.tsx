@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
+import { NavLink } from 'react-router-dom';
 import { useFullscreen } from '../../hooks/useFullscreen';
 
 const Bar = styled.header`
@@ -35,6 +36,40 @@ const Divider = styled.div`
 
   @media (max-width: 900px) {
     height: 16px;
+  }
+`;
+
+const Links = styled.nav`
+  display: flex;
+  gap: 8px;
+`;
+
+const StyledLink = styled(NavLink)`
+  padding: 9px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.fret};
+  }
+
+  &.active {
+    background: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.noteTextActive};
+  }
+
+  &.active:hover {
+    background: ${({ theme }) => theme.colors.accent};
+  }
+
+  @media (max-width: 900px) {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 `;
 
@@ -87,6 +122,12 @@ export function TopBar({ children }: TopBarProps) {
   return (
     <Bar>
       <Brand>🎸 Fretboard</Brand>
+      <Links>
+        <StyledLink to="/" end>
+          Fretboard
+        </StyledLink>
+        <StyledLink to="/settings">Settings</StyledLink>
+      </Links>
       <Actions>
         {children}
         {fullscreen.isSupported && (
