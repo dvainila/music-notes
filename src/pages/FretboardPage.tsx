@@ -64,7 +64,7 @@ const Content = styled.div`
   grid-template-columns: 3fr 1fr;
   grid-template-rows: 1fr 1fr;
   grid-template-areas: 'fret note' 'fret practice';
-  gap: 24px;
+  gap: 32px;
   padding: 32px 40px;
   overflow: hidden;
 

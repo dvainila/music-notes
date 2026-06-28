@@ -19,7 +19,7 @@ export const Board = styled.div<{ $handedness: Handedness }>`
   height: 100%;
   background: ${({ theme }) => theme.colors.surface};
   border-radius: 14px;
-  padding: 40px 32px;
+  padding: 40px 48px;
   width: 100%;
   max-width: 1180px;
 
