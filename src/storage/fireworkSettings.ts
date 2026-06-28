@@ -3,11 +3,12 @@ export type FireworkDensity = 'low' | 'medium' | 'high';
 export interface FireworkSettings {
   enabled: boolean;
   density: FireworkDensity;
+  trails: boolean;
 }
 
 const STORAGE_KEY = 'guitar-fretboard:fireworks';
 
-const DEFAULT_SETTINGS: FireworkSettings = { enabled: true, density: 'medium' };
+const DEFAULT_SETTINGS: FireworkSettings = { enabled: true, density: 'medium', trails: false };
 
 export function loadFireworkSettings(): FireworkSettings {
   if (typeof localStorage === 'undefined') return DEFAULT_SETTINGS;
@@ -19,7 +20,7 @@ export function loadFireworkSettings(): FireworkSettings {
       parsed.density === 'low' || parsed.density === 'medium' || parsed.density === 'high'
         ? parsed.density
         : DEFAULT_SETTINGS.density;
-    return { enabled: !!parsed.enabled, density };
+    return { enabled: !!parsed.enabled, density, trails: !!parsed.trails };
   } catch {
     return DEFAULT_SETTINGS;
   }

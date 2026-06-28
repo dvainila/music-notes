@@ -259,7 +259,11 @@ export function FretboardPage() {
       )}
 
       {isCorrect && fireworkSettings.enabled && (
-        <Firework key={practice?.currentNote} {...DENSITY_CONFIG[fireworkSettings.density]} />
+        <Firework
+          key={practice?.currentNote}
+          {...DENSITY_CONFIG[fireworkSettings.density]}
+          trails={fireworkSettings.trails}
+        />
       )}
     </Page>
   );

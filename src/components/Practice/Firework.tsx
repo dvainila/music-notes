@@ -3,12 +3,13 @@ import styled, { keyframes } from 'styled-components';
 import type { FireworkDensity } from '../../storage/fireworkSettings';
 
 const COLORS = ['#4fd1c5', '#f6c453', '#f06595', '#74c0fc', '#69db7c', '#da77f2'];
+const TRAIL_STEPS = 3;
 
 // Higher density means both more particles per burst AND more simultaneous bursts.
 export const DENSITY_CONFIG: Record<FireworkDensity, { particlesPerBurst: number; burstCount: number }> = {
-  low: { particlesPerBurst: 16, burstCount: 3 },
-  medium: { particlesPerBurst: 30, burstCount: 5 },
-  high: { particlesPerBurst: 50, burstCount: 9 },
+  low: { particlesPerBurst: 26, burstCount: 5 },
+  medium: { particlesPerBurst: 42, burstCount: 8 },
+  high: { particlesPerBurst: 65, burstCount: 12 },
 };
 
 const burst = keyframes`
@@ -18,6 +19,23 @@ const burst = keyframes`
   }
   100% {
     transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.2);
+    opacity: 0;
+  }
+`;
+
+// Trail dots ride the exact same path as their particle but start a little later, so at
+// any moment they sit behind it along the same line — and fade in (rather than start at
+// full opacity) so they read as a dimmer tail instead of a second firework.
+const trail = keyframes`
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.1);
     opacity: 0;
   }
 `;
@@ -47,6 +65,26 @@ const Particle = styled.span<{ $tx: number; $ty: number; $color: string; $delay:
   --tx: ${({ $tx }) => $tx}px;
   --ty: ${({ $ty }) => $ty}px;
   animation: ${burst} 650ms ease-out forwards;
+  animation-delay: ${({ $delay }) => $delay}ms;
+`;
+
+const TrailDot = styled.span<{
+  $tx: number;
+  $ty: number;
+  $color: string;
+  $delay: number;
+  $size: number;
+}>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: ${({ $size }) => $size}px;
+  height: ${({ $size }) => $size}px;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  --tx: ${({ $tx }) => $tx}px;
+  --ty: ${({ $ty }) => $ty}px;
+  animation: ${trail} 650ms ease-out forwards;
   animation-delay: ${({ $delay }) => $delay}ms;
 `;
 
@@ -89,11 +127,13 @@ function createBursts(burstCount: number, particlesPerBurst: number): BurstSpec[
 interface FireworkProps {
   particlesPerBurst?: number;
   burstCount?: number;
+  trails?: boolean;
 }
 
 export function Firework({
   particlesPerBurst = DENSITY_CONFIG.medium.particlesPerBurst,
   burstCount = DENSITY_CONFIG.medium.burstCount,
+  trails = false,
 }: FireworkProps) {
   const bursts = useMemo(
     () => createBursts(burstCount, particlesPerBurst),
@@ -105,7 +145,20 @@ export function Firework({
       {bursts.map((b, i) => (
         <BurstOrigin key={i} $left={b.left} $top={b.top}>
           {b.particles.map((p, j) => (
-            <Particle key={j} $tx={p.tx} $ty={p.ty} $color={p.color} $delay={p.delay} />
+            <span key={j}>
+              {trails &&
+                Array.from({ length: TRAIL_STEPS }, (_, step) => (
+                  <TrailDot
+                    key={step}
+                    $tx={p.tx}
+                    $ty={p.ty}
+                    $color={p.color}
+                    $delay={p.delay + (step + 1) * 35}
+                    $size={4 - step}
+                  />
+                ))}
+              <Particle $tx={p.tx} $ty={p.ty} $color={p.color} $delay={p.delay} />
+            </span>
           ))}
         </BurstOrigin>
       ))}

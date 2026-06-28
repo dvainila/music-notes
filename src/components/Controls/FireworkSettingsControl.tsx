@@ -117,6 +117,16 @@ export function FireworkSettingsControl({ value, onChange }: FireworkSettingsCon
           ))}
         </DensitySelect>
       )}
+      {value.enabled && (
+        <Label>
+          <Switch
+            type="checkbox"
+            checked={value.trails}
+            onChange={(e) => onChange({ ...value, trails: e.target.checked })}
+          />
+          Trails
+        </Label>
+      )}
     </Wrapper>
   );
 }
