@@ -74,6 +74,7 @@ export const FretCell = styled.div<{
 }>`
   position: relative;
   height: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: ${({ $handedness }) => ($handedness === 'right' ? 'flex-start' : 'flex-end')};

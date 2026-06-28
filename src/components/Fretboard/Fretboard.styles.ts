@@ -22,6 +22,12 @@ export const Board = styled.div<{ $handedness: Handedness }>`
   padding: 40px 48px;
   width: 100%;
   max-width: 1180px;
+  /* Board is a flex child of FretArea. Flex items default to min-width: auto, which
+     resolves to their content's min-content size — without overriding this, Board
+     refuses to shrink below the width its 12 columns "want" even though width:100% says
+     otherwise, and overflows past its allotted space (most visibly on its last column —
+     the string label for left-handed mode — spilling into the cards beside it). */
+  min-width: 0;
 
   @media (max-width: 900px) {
     grid-template-columns: ${({ $handedness }) =>
@@ -48,6 +54,7 @@ export const FretNumbers = styled.div`
 // since note bubbles themselves sit flush with the start of the fret, not centered.
 export const FretNumber = styled.div<{ $handedness: Handedness }>`
   height: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: ${({ $handedness }) => ($handedness === 'right' ? 'flex-start' : 'flex-end')};
@@ -86,6 +93,7 @@ export const MarkerRow = styled.div`
 
 export const MarkerCell = styled.div<{ $handedness: Handedness }>`
   height: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: ${({ $handedness }) => ($handedness === 'right' ? 'flex-start' : 'flex-end')};
