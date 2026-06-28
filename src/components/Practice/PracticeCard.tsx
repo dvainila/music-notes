@@ -47,12 +47,18 @@ const FlipCard = styled.div<{ $rotation: number }>`
   transition: transform 0.6s ease;
 `;
 
-const Face = styled.div<{ $back?: boolean }>`
+const Face = styled.div<{ $back?: boolean; $visible: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  width: 100%;
+  gap: 14px;
   backface-visibility: hidden;
+  /* backface-visibility hides the face visually, but hit-testing behavior for a
+     rotated-away face isn't fully consistent across browsers — explicitly disable
+     pointer events on whichever face isn't currently facing the viewer so its
+     overlapping buttons can't steal clicks meant for the visible one. */
+  pointer-events: ${({ $visible }) => ($visible ? 'auto' : 'none')};
   ${({ $back }) =>
     $back
       ? css`
@@ -169,39 +175,48 @@ export function PracticeCard({
     });
   }, [note]);
 
+  const status = isListeningForMatch
+    ? isCorrect
+      ? 'Correct! ✓'
+      : detectedNote
+        ? `Hearing: ${detectedNote}`
+        : 'Play a note on the guitar...'
+    : ' ';
+
+  const frontVisible = flipCount % 2 === 0;
+
   return (
     <Wrapper $correct={isCorrect}>
       <FlipScene>
         <FlipCard $rotation={flipCount * 180}>
-          <Face>
+          <Face $visible={frontVisible}>
             <Hint>Find this note on string {stringLabel}</Hint>
             <NoteName>{frontNote}</NoteName>
+            <StatusLine $correct={isCorrect}>{status}</StatusLine>
+            <Actions>
+              <Button type="button" $variant="primary" onClick={onNext}>
+                Next note
+              </Button>
+              <Button type="button" onClick={onFinish}>
+                Finish practice
+              </Button>
+            </Actions>
           </Face>
-          <Face $back>
+          <Face $back $visible={!frontVisible}>
             <Hint>Find this note on string {stringLabel}</Hint>
             <NoteName>{backNote}</NoteName>
+            <StatusLine $correct={isCorrect}>{status}</StatusLine>
+            <Actions>
+              <Button type="button" $variant="primary" onClick={onNext}>
+                Next note
+              </Button>
+              <Button type="button" onClick={onFinish}>
+                Finish practice
+              </Button>
+            </Actions>
           </Face>
         </FlipCard>
       </FlipScene>
-
-      <StatusLine $correct={isCorrect}>
-        {isListeningForMatch
-          ? isCorrect
-            ? 'Correct! ✓'
-            : detectedNote
-              ? `Hearing: ${detectedNote}`
-              : 'Play a note on the guitar...'
-          : ' '}
-      </StatusLine>
-
-      <Actions>
-        <Button type="button" $variant="primary" onClick={onNext}>
-          Next note
-        </Button>
-        <Button type="button" onClick={onFinish}>
-          Finish practice
-        </Button>
-      </Actions>
     </Wrapper>
   );
 }
