@@ -2,7 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { PitchDetector } from 'pitchy';
 import { frequencyToNote, type DetectedNote } from '../music/frequency';
 
-const MIN_CLARITY = 0.93;
+// 0.93 turned out to be unrealistically strict for a real phone mic (as opposed to a
+// clean synthetic signal): it passed often enough on the brightest string but rarely
+// elsewhere, which combined with the stability window below to make detection feel
+// like it needed several seconds to "warm up". The stability/majority-vote check is
+// the real defense against noise, so the raw per-frame bar can be more forgiving.
+const MIN_CLARITY = 0.8;
 
 // Kept just above the typical electrical/ADC noise floor (~0.001-0.002 RMS on most
 // mics) — going lower risks treating pure silence as signal. This isn't the main
@@ -121,6 +126,17 @@ export function usePitchDetection() {
       source.connect(highpass);
       highpass.connect(lowpass);
       lowpass.connect(analyser);
+
+      // A node graph that never reaches the destination isn't guaranteed to be part
+      // of the "active" rendering graph per spec — Chrome tends to process it anyway,
+      // but Safari/WebKit (i.e. every browser on iPhone, since they're all WebKit
+      // under the hood) can simply not pull audio through a dangling chain, which
+      // silently broke detection completely on iOS. Route through a muted gain node
+      // so the graph is genuinely live without the user hearing their own mic.
+      const mute = audioContext.createGain();
+      mute.gain.value = 0;
+      analyser.connect(mute);
+      mute.connect(audioContext.destination);
 
       const detector = PitchDetector.forFloat32Array(analyser.fftSize);
       const input = new Float32Array(detector.inputLength);
