@@ -2,7 +2,15 @@ import { Fragment, type ReactNode } from 'react';
 import { STANDARD_TUNING, getFretOrder, MARKER_FRETS, DOUBLE_MARKER_FRET, type Handedness } from '../../music/notes';
 import { StringRow } from './StringRow';
 import { FretMarker } from './FretMarker';
-import { Board, FretNumbers, FretNumber, Spacer, MarkerRow, MarkerCell } from './Fretboard.styles';
+import {
+  Board,
+  FretNumbers,
+  FretNumber,
+  Spacer,
+  MarkerRow,
+  MarkerCell,
+  MarkerSlot,
+} from './Fretboard.styles';
 
 interface PracticeVisibility {
   stringIndex: number;
@@ -25,11 +33,17 @@ export function Fretboard({
   onSelectString,
 }: FretboardProps) {
   const frets = getFretOrder(handedness);
-  const fretNumberCells = frets.map((fret) => <FretNumber key={fret}>{fret}</FretNumber>);
+  const fretNumberCells = frets.map((fret) => (
+    <FretNumber key={fret} $handedness={handedness}>
+      <span>{fret}</span>
+    </FretNumber>
+  ));
   const markerCells = frets.map((fret) => (
-    <MarkerCell key={fret}>
-      {MARKER_FRETS.has(fret) && <FretMarker fret={fret} />}
-      {fret === DOUBLE_MARKER_FRET && <FretMarker fret={fret} double />}
+    <MarkerCell key={fret} $handedness={handedness}>
+      <MarkerSlot>
+        {MARKER_FRETS.has(fret) && <FretMarker fret={fret} />}
+        {fret === DOUBLE_MARKER_FRET && <FretMarker fret={fret} double />}
+      </MarkerSlot>
     </MarkerCell>
   ));
 
