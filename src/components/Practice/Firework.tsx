@@ -6,9 +6,10 @@ import type { FireworkDensity, FireworkDuration, FireworkSize } from '../../stor
 const NEON_COLORS = ['#00fff7', '#ff00e6', '#00aaff', '#ff0050', '#39ff14', '#bf00ff', '#fff200'];
 
 const BURST_INTERVAL_MS = 90;
-const TRAIL_HISTORY_LENGTH = 10;
+const TRAIL_HISTORY_LENGTH = 8;
 const GRAVITY = 0.00055;
 const DRAG = 0.985;
+const GLOW_SPRITE_SIZE = 64;
 
 // Higher density means both more particles per burst AND more simultaneous bursts.
 export const DENSITY_CONFIG: Record<FireworkDensity, { particlesPerBurst: number; burstCount: number }> = {
@@ -62,6 +63,32 @@ interface FireworkProps {
   durationMs?: number;
 }
 
+// ctx.shadowBlur is a real blur convolution recomputed on every single draw call — it
+// cannot be cached or batched. Calling it per-particle (and per trail segment!) for
+// hundreds of particles a frame is what made the canvas version slower than the old
+// DOM/CSS one, not faster. Pre-rendering one soft radial-gradient "glow" sprite per
+// color up front and stamping it with drawImage (a cheap GPU blit) gets the same look
+// for a tiny fraction of the cost.
+function createGlowSprites(): Map<string, HTMLCanvasElement> {
+  const sprites = new Map<string, HTMLCanvasElement>();
+  for (const color of NEON_COLORS) {
+    const sprite = document.createElement('canvas');
+    sprite.width = GLOW_SPRITE_SIZE;
+    sprite.height = GLOW_SPRITE_SIZE;
+    const sctx = sprite.getContext('2d');
+    if (!sctx) continue;
+    const r = GLOW_SPRITE_SIZE / 2;
+    const gradient = sctx.createRadialGradient(r, r, 0, r, r, r);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(0.4, color);
+    gradient.addColorStop(1, 'transparent');
+    sctx.fillStyle = gradient;
+    sctx.fillRect(0, 0, GLOW_SPRITE_SIZE, GLOW_SPRITE_SIZE);
+    sprites.set(color, sprite);
+  }
+  return sprites;
+}
+
 // Runs entirely on a <canvas> with a vanilla requestAnimationFrame loop instead of one
 // React-managed DOM node + CSS animation per particle — hundreds of those were causing
 // the layout/paint jank. React only mounts the canvas once; nothing here re-renders.
@@ -90,6 +117,8 @@ export function Firework({
     };
     resize();
     window.addEventListener('resize', resize);
+
+    const glowSprites = createGlowSprites();
 
     let particles: Particle[] = [];
     let rafId = 0;
@@ -146,31 +175,29 @@ export function Firework({
           p.history.push({ x: p.x, y: p.y });
           if (p.history.length > TRAIL_HISTORY_LENGTH) p.history.shift();
 
+          // Plain additive-blended strokes, no shadowBlur — 'lighter' compositing
+          // already makes overlapping trail segments glow brighter on its own.
+          ctx.strokeStyle = p.color;
           for (let i = 1; i < p.history.length; i += 1) {
             const t = i / p.history.length;
+            ctx.globalAlpha = alpha * t * 0.6;
+            ctx.lineWidth = Math.max(0.5, p.size * t * 0.7);
             ctx.beginPath();
             ctx.moveTo(p.history[i - 1].x, p.history[i - 1].y);
             ctx.lineTo(p.history[i].x, p.history[i].y);
-            ctx.strokeStyle = p.color;
-            ctx.globalAlpha = alpha * t * 0.65;
-            ctx.lineWidth = Math.max(0.5, p.size * t * 0.7);
-            ctx.shadowBlur = 14;
-            ctx.shadowColor = p.color;
             ctx.stroke();
           }
         }
 
-        ctx.globalAlpha = alpha;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = p.color;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, Math.max(0.4, p.size * (0.5 + alpha * 0.5)), 0, Math.PI * 2);
-        ctx.fill();
+        const sprite = glowSprites.get(p.color);
+        if (sprite) {
+          const drawSize = p.size * 4.5 * (0.6 + alpha * 0.4);
+          ctx.globalAlpha = alpha;
+          ctx.drawImage(sprite, p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
+        }
       }
 
       ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
       ctx.globalCompositeOperation = 'source-over';
 
       if (particles.length > 0 || burstsRemaining > 0) {
